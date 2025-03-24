@@ -1,0 +1,26 @@
+# Node.js
+node_modules/
+dist/
+coverage/
+testReport.html
+
+# macOS
+.DS_Store
+
+# files
+structure.md
+.env
+*.txt
+TODO.md
+debug-_groups.json
+folder_structure.md
+
+# SSL Certificates
+certs/
+*.pem
+
+
+# Loggar
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
