@@ -1,7 +1,14 @@
 import { Food } from '../../models/Food'
 import { Nutrition } from '../../models/Nutrition'
 import { AppDataSource } from '../../config/data-source'
-import { MoreThan, In, ILike, Between, MoreThanOrEqual } from 'typeorm'
+import {
+  MoreThan,
+  In,
+  ILike,
+  Between,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+} from 'typeorm'
 
 /**
  * @module GraphQLResolvers
@@ -54,36 +61,6 @@ export const resolvers = {
         relations: ['nutritions'],
       })
     },
-
-    searchFoods: async (_: unknown, args: { query: string }) => {
-      const foodRepository = AppDataSource.getRepository(Food)
-
-      // Step 1: Get matching IDs only (true limit!)
-      const foodsMatching = await foodRepository
-        .createQueryBuilder('food')
-        .select('food.id')
-        .where('LOWER(food.name) LIKE LOWER(:query)', {
-          query: `%${args.query}%`,
-        })
-        .orderBy('food.name', 'ASC')
-        .limit(20)
-        .getMany()
-
-      const ids = foodsMatching.map((f) => f.id)
-
-      // Step 2: Get full food objects + relations by ID
-      const results = await foodRepository.find({
-        where: { id: In(ids) },
-        relations: ['nutritions'],
-        order: { name: 'ASC' },
-      })
-
-      console.log(
-        `🔎 Search for: ${args.query}, found ${results.length} result(s)`
-      )
-
-      return results
-    },
     /**
      * Relay-style cursor-based pagination for foods
      */
@@ -121,12 +98,11 @@ export const resolvers = {
       }
     },
 
-    searchByNutrient: async (
+    searchFoodsAdvanced: async (
       _: unknown,
       args: {
-        nutrient: string
-        maxValue?: number
-        minValue?: number
+        name?: string
+        nutrients?: { nutrient: string; min?: number; max?: number }[]
         first?: number
       }
     ) => {
@@ -134,48 +110,98 @@ export const resolvers = {
         const foodRepository = AppDataSource.getRepository(Food)
         const nutritionRepository = AppDataSource.getRepository(Nutrition)
 
-        const min = args.minValue ?? 0
-        const max = args.maxValue
+        let foodIdsByName: number[] | null = null
+        let foodIdsByNutrients: number[] | null = null
 
-        // Dynamic WHERE clause based on min/max values
-        const whereClaude: any = {
-          name: ILike(`%${args.nutrient}%`), // LIKE is case-insensitive in PostgreSQL, when using ILIKE
+        // Step 1: Filter by name (if provided)
+        if (args.name) {
+          const foodsMatchingName = await foodRepository
+            .createQueryBuilder('food')
+            .select('food.id')
+            .where('LOWER(food.name) LIKE LOWER(:query)', {
+              query: `%${args.name}%`,
+            })
+            .orderBy('food.name', 'ASC')
+            .limit(200) // prevent excessive lookups
+            .getMany()
+
+          foodIdsByName = foodsMatchingName.map((f) => f.id)
         }
 
-        if (max !== undefined) {
-          whereClaude.value = Between(min, max)
+        //  Step 2: Filter by nutrients (if provided)
+        if (args.nutrients?.length) {
+          const nutrientIdLists: number[][] = []
+
+          for (const filter of args.nutrients) {
+            const whereClause: any = {
+              name: ILike(filter.nutrient),
+            }
+
+            if (filter.min !== undefined && filter.max !== undefined) {
+              whereClause.value = Between(filter.min, filter.max)
+            } else if (filter.min !== undefined) {
+              whereClause.value = MoreThanOrEqual(filter.min)
+            } else if (filter.max !== undefined) {
+              whereClause.value = LessThanOrEqual(filter.max)
+            }
+
+            const matches = await nutritionRepository.find({
+              where: whereClause,
+              relations: ['food'],
+            })
+
+            const ids = matches.map((n) => n.food.id)
+            nutrientIdLists.push(ids)
+          }
+
+          //  Get intersection of all filters (AND logic)
+          foodIdsByNutrients = nutrientIdLists.reduce((a, b) =>
+            a.filter((id) => b.includes(id))
+          )
+        }
+
+        // Combine filters
+        let finalFoodIds: number[]
+
+        if (foodIdsByName && foodIdsByNutrients) {
+          // Match both name and nutrients
+          finalFoodIds = foodIdsByName.filter((id) =>
+            foodIdsByNutrients!.includes(id)
+          )
+        } else if (foodIdsByName) {
+          finalFoodIds = foodIdsByName
+        } else if (foodIdsByNutrients) {
+          finalFoodIds = foodIdsByNutrients
         } else {
-          whereClaude.value = MoreThanOrEqual(min)
+          // No filters = return empty list or maybe throw error
+          return []
         }
 
-        // Step 1: Find matching nutrition rows
-        const matchingNutritions = await nutritionRepository.find({
-          where: whereClaude,
-          relations: ['food'], // Load the food-relations for the matched nutritions
-        })
+        // Slice and deduplicate
+        const limitedIds = [...new Set(finalFoodIds)].slice(0, args.first ?? 20)
 
-        const foodIds = [
-          ...new Set(matchingNutritions.map((n) => n.food.id)),
-        ].slice(0, args.first ?? 20) // LIMIT via slice()
-
-        // Step 2: Fetch foods by those IDs with their nutritions
+        // Final fetch
         const results = await foodRepository.find({
-          where: { id: In(foodIds) },
+          where: { id: In(limitedIds) },
           relations: ['nutritions'],
           order: { name: 'ASC' },
         })
 
         console.log(
-          `🔎 Nutrient search: ${args.nutrient}, matched foods: ${results.length}`
+          `🔎 Advanced search → name: ${args.name || 'none'}, filters: ${
+            args.nutrients?.length ?? 0
+          }, results: ${results.length}`
+        )
+
+        console.log(
+          '📋 Matched food names:',
+          results.map((f) => f.name)
         )
 
         return results
       } catch (error) {
-        console.error(
-          '❌ Failed to search by nutrient, Error in searchNyNutrient resolver:',
-          error
-        )
-        throw new Error('Failed to search by nutrient')
+        console.error('❌ Error in searchFoodsAdvanced:', error)
+        throw new Error('Advanced food search failed')
       }
     },
   },

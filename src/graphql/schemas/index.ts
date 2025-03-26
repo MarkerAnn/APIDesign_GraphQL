@@ -120,21 +120,33 @@ export const typeDefs: DocumentNode = gql`
     foodsConnection(first: Int = 10, after: String): FoodConnection!
   }
 
-  extend type Query {
-    """
-    Search for foods by name using partial, case-insensitive match
-    """
-    searchFoods(query: String!): [Food!]!
+  """
+  Input for filtering foods based on nutrient name and value range
+  """
+  input NutrientFilter {
+    "The name of the nutrient to filter by (e.g. 'Protein', 'Kolhydrater')"
+    nutrient: String!
+
+    "Optional minimum value for the nutrient (e.g. min protein)"
+    min: Float
+
+    "Optional maximum value for the nutrient (e.g. max protein)"
+    max: Float
   }
 
   extend type Query {
     """
-    Get foods where a specific nutrient is within a given range
+    Advanced food search with optional name matching and nutrient filters.
+
+    - If 'name' is provided, matches foods where the name includes the input string.
+    - If 'nutrients' are provided, only foods matching all nutrient filters are returned.
+    - If both are provided, foods must match both the name and all nutrient filters.
+
+    Returns up to 'first' matching foods, default is 20.
     """
-    searchByNutrient(
-      nutrient: String!
-      maxValue: Float
-      minValue: Float
+    searchFoodsAdvanced(
+      name: String
+      nutrients: [NutrientFilter!]
       first: Int = 20
     ): [Food!]!
   }
