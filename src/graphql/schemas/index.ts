@@ -126,6 +126,25 @@ export const typeDefs: DocumentNode = gql`
     """
     searchFoods(query: String!): [Food!]!
   }
+
+  extend type Query {
+    """
+    Find foods by nutrient name (e.g. Zink, protein, Fett)
+    """
+    searchByNutrient(query: String!, first: Int = 20): [Food!]!
+  }
+
+  extend type Query {
+    """
+    Get foods where a specific nutrient is within a given range
+    """
+    searchByNutrientValue(
+      nutrient: String!
+      maxValue: Float
+      minValue: Float
+      first: Int = 20
+    ): [Food!]!
+  }
 `
 // TODO: Updte this comment later
 // TODO: Split this file into multiple files?

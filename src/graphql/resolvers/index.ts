@@ -1,6 +1,7 @@
 import { Food } from '../../models/Food'
+import { Nutrition } from '../../models/Nutrition'
 import { AppDataSource } from '../../config/data-source'
-import { MoreThan, In } from 'typeorm'
+import { MoreThan, In, ILike, Between, MoreThanOrEqual } from 'typeorm'
 
 /**
  * @module GraphQLResolvers
@@ -119,9 +120,113 @@ export const resolvers = {
         totalCount,
       }
     },
+
+    searchByNutrient: async (
+      _: unknown,
+      args: { query: string; first?: number }
+    ) => {
+      try {
+        const foodRepository = AppDataSource.getRepository(Food)
+        const nutritionRepository = AppDataSource.getRepository(Nutrition)
+
+        // Step 1: Find matching nutrition rows
+        const matchingNutritions = await nutritionRepository.find({
+          where: {
+            name: ILike(`%${args.query}%`), // LIKE is case-insensitive in PostgreSQL, when using ILIKE
+          },
+          relations: ['food'], // Load the food-relations for the matched nutritions
+        })
+
+        const foodIds = [
+          ...new Set(matchingNutritions.map((n) => n.food.id)),
+        ].slice(0, args.first ?? 20) // LIMIT via slice()
+
+        // Step 2: Fetch foods by those IDs with their nutritions
+        const results = await foodRepository.find({
+          where: { id: In(foodIds) },
+          relations: ['nutritions'],
+          order: { name: 'ASC' },
+        })
+
+        console.log(
+          `🔎 Nutrient search: ${args.query}, matched foods: ${results.length}`
+        )
+
+        return results
+      } catch (error) {
+        console.error(
+          '❌ Failed to search by nutrient, Error in searchNyNutrient resolver:',
+          error
+        )
+        throw new Error('Failed to search by nutrient')
+      }
+    },
+
+    searchByNutrientValue: async (
+      _: unknown,
+      args: {
+        nutrient: string
+        maxValue?: number
+        minValue?: number
+        first?: number
+      }
+    ) => {
+      try {
+        const foodRepository = AppDataSource.getRepository(Food)
+        const nutritionRepository = AppDataSource.getRepository(Nutrition)
+
+        const min = args.minValue ?? 0
+        const max = args.maxValue
+
+        // Dynamic WHERE clause based on min/max values
+        const whereClaude: any = {
+          name: ILike(`%${args.nutrient}%`), // LIKE is case-insensitive in PostgreSQL, when using ILIKE
+        }
+
+        if (max !== undefined) {
+          whereClaude.value = Between(min, max)
+        } else {
+          whereClaude.value = MoreThanOrEqual(min)
+        }
+
+        // Step 1: Find matching nutrition rows
+        const matchingNutritions = await nutritionRepository.find({
+          where: whereClaude,
+          relations: ['food'], // Load the food-relations for the matched nutritions
+        })
+
+        const foodIds = [
+          ...new Set(matchingNutritions.map((n) => n.food.id)),
+        ].slice(0, args.first ?? 20) // LIMIT via slice()
+
+        // Step 2: Fetch foods by those IDs with their nutritions
+        const results = await foodRepository.find({
+          where: { id: In(foodIds) },
+          relations: ['nutritions'],
+          order: { name: 'ASC' },
+        })
+
+        console.log(
+          `🔎 Nutrient search: ${args.nutrient}, matched foods: ${results.length}`
+        )
+
+        return results
+      } catch (error) {
+        console.error(
+          '❌ Failed to search by nutrient, Error in searchNyNutrient resolver:',
+          error
+        )
+        throw new Error('Failed to search by nutrient')
+      }
+    },
   },
 }
 
 // TODO: update the jsdic comments for the resolvers
 // TODO: Split this up later, e.g. food.resolver.ts and index.ts (imports and collects all resolvers)
 // TODO: cache?
+// TODO: error handling
+// TODO: Add fallback logic for undefined, null, etc:
+// if (!args.nutrient) {
+//   throw new Error('Missing nutrient argument')
+// }

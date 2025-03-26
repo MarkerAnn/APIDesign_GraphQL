@@ -3,6 +3,7 @@ node_modules/
 dist/
 coverage/
 testReport.html
+querys.sql
 
 # macOS
 .DS_Store
@@ -15,6 +16,7 @@ TODO.md
 debug-_groups.json
 folder_structure.md
 how.md
+TODO.md
 
 # SSL Certificates
 certs/
