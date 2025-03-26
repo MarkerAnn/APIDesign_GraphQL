@@ -21,6 +21,15 @@ import { DocumentNode } from 'graphql'
  * - Query: Defines available query operations for retrieving food and nutrition data
  */
 export const typeDefs: DocumentNode = gql`
+  enum SortBy {
+    NAME
+    NUTRIENT
+  }
+
+  enum SortDirection {
+    ASC
+    DESC
+  }
   """
   Nutrition type representing nutritional information for food items
 
@@ -148,6 +157,9 @@ export const typeDefs: DocumentNode = gql`
       name: String
       nutrients: [NutrientFilter!]
       first: Int = 20
+      sortBy: SortBy = NAME
+      sortDirection: SortDirection = ASC
+      sortNutrient: String
     ): [Food!]!
   }
 `

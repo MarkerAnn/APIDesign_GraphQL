@@ -1,5 +1,6 @@
 import { Food } from '../../models/Food'
 import { Nutrition } from '../../models/Nutrition'
+import { sortFoods } from '../../utils/sortFoods'
 import { AppDataSource } from '../../config/data-source'
 import {
   MoreThan,
@@ -104,6 +105,9 @@ export const resolvers = {
         name?: string
         nutrients?: { nutrient: string; min?: number; max?: number }[]
         first?: number
+        sortBy?: 'NAME' | 'NUTRIENT'
+        sortDirection?: 'ASC' | 'DESC'
+        sortNutrient?: string
       }
     ) => {
       try {
@@ -134,7 +138,7 @@ export const resolvers = {
 
           for (const filter of args.nutrients) {
             const whereClause: any = {
-              name: ILike(filter.nutrient),
+              name: ILike(`%${filter.nutrient}%`),
             }
 
             if (filter.min !== undefined && filter.max !== undefined) {
@@ -184,7 +188,6 @@ export const resolvers = {
         const results = await foodRepository.find({
           where: { id: In(limitedIds) },
           relations: ['nutritions'],
-          order: { name: 'ASC' },
         })
 
         console.log(
@@ -198,7 +201,14 @@ export const resolvers = {
           results.map((f) => f.name)
         )
 
-        return results
+        const sorted = sortFoods(
+          results,
+          args.sortBy ?? 'NAME',
+          args.sortDirection ?? 'ASC',
+          args.sortNutrient
+        )
+
+        return sorted
       } catch (error) {
         console.error('❌ Error in searchFoodsAdvanced:', error)
         throw new Error('Advanced food search failed')
