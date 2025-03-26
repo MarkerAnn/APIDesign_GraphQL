@@ -1,4 +1,3 @@
-// Entry point for the GraphQL API server
 import { ApolloServer } from '@apollo/server'
 import { expressMiddleware } from '@apollo/server/express4'
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
@@ -7,59 +6,44 @@ import http from 'http'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
+import { AppDataSource } from './config/data-source'
+import { typeDefs } from './graphql/schemas'
+import { resolvers } from './graphql/resolvers'
 
-// Load environment variables
 dotenv.config()
 
-// Define a simple schema to start with
-const typeDefs = `#graphql
-  type Query {
-    hello: String
-  }
-`
-
-// Define resolvers
-const resolvers = {
-  Query: {
-    hello: () => 'Hello world!',
-  },
-}
-
 async function startServer() {
-  // Create Express application
-  const app = express()
+  try {
+    // Initialize the connection to the database
+    await AppDataSource.initialize()
+    console.log('✅ Connected to PostgreSQL')
 
-  // Create HTTP server
-  const httpServer = http.createServer(app)
+    const app = express()
+    const httpServer = http.createServer(app)
 
-  // Create Apollo Server instance
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  })
+    const server = new ApolloServer({
+      typeDefs,
+      resolvers,
+      plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    })
 
-  // Start the Apollo Server
-  await server.start()
+    await server.start()
 
-  // Apply middleware to Express
-  app.use(
-    '/graphql',
-    cors<cors.CorsRequest>(),
-    bodyParser.json(),
-    expressMiddleware(server)
-  )
+    app.use(
+      '/graphql',
+      cors<cors.CorsRequest>(),
+      bodyParser.json(),
+      expressMiddleware(server)
+    )
 
-  // Start the server
-  const PORT = process.env.PORT || 4000
-  await new Promise<void>((resolve) => {
-    httpServer.listen({ port: PORT }, resolve)
-  })
-
-  console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`)
+    const PORT = process.env.PORT || 4000
+    httpServer.listen(PORT, () =>
+      console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`)
+    )
+  } catch (error) {
+    console.error('❌ Failed to start server:', error)
+    process.exit(1)
+  }
 }
 
-// Start the server
-startServer().catch((err) => {
-  console.error('Error starting server:', err)
-})
+startServer()
