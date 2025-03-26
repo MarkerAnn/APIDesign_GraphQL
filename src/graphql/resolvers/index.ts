@@ -123,47 +123,6 @@ export const resolvers = {
 
     searchByNutrient: async (
       _: unknown,
-      args: { query: string; first?: number }
-    ) => {
-      try {
-        const foodRepository = AppDataSource.getRepository(Food)
-        const nutritionRepository = AppDataSource.getRepository(Nutrition)
-
-        // Step 1: Find matching nutrition rows
-        const matchingNutritions = await nutritionRepository.find({
-          where: {
-            name: ILike(`%${args.query}%`), // LIKE is case-insensitive in PostgreSQL, when using ILIKE
-          },
-          relations: ['food'], // Load the food-relations for the matched nutritions
-        })
-
-        const foodIds = [
-          ...new Set(matchingNutritions.map((n) => n.food.id)),
-        ].slice(0, args.first ?? 20) // LIMIT via slice()
-
-        // Step 2: Fetch foods by those IDs with their nutritions
-        const results = await foodRepository.find({
-          where: { id: In(foodIds) },
-          relations: ['nutritions'],
-          order: { name: 'ASC' },
-        })
-
-        console.log(
-          `🔎 Nutrient search: ${args.query}, matched foods: ${results.length}`
-        )
-
-        return results
-      } catch (error) {
-        console.error(
-          '❌ Failed to search by nutrient, Error in searchNyNutrient resolver:',
-          error
-        )
-        throw new Error('Failed to search by nutrient')
-      }
-    },
-
-    searchByNutrientValue: async (
-      _: unknown,
       args: {
         nutrient: string
         maxValue?: number
