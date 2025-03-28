@@ -44,7 +44,7 @@ export class Nutrition {
    * @description Numerical value representing the amount of the nutrient present
    * @optional This field may be null if the value is unknown or unmeasured
    */
-  @Column({ type: 'decimal', nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   value!: number
 
   /**
@@ -52,7 +52,7 @@ export class Nutrition {
    * @description The unit used for measuring the nutrient (e.g., "g", "mg", "kcal")
    * @optional This field may be null if the unit is not specified
    */
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   unit!: string
 
   /**
@@ -60,7 +60,13 @@ export class Nutrition {
    * @description Weight in grams for which the nutritional value is provided
    * @optional This field may be null if the reference weight is not specified
    */
-  @Column({ name: 'weight_gram', type: 'decimal', nullable: true })
+  @Column({
+    name: 'weight_gram',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+  })
   weightGram!: number
 
   /**
@@ -68,15 +74,14 @@ export class Nutrition {
    * @description Logical grouping of the nutrient (e.g., "vitamin", "macronutrient", "energy", etc.)
    * @optional This field may be null if the category is not specified
    */
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   category!: string
-
   /**
    * @property {string} valueType - Type of the value measurement
    * @description Indicates how the value was determined (e.g., "measured", "calculated")
    * @optional This field may be null if the measurement method is not specified
    */
-  @Column({ name: 'value_type', nullable: true })
+  @Column({ name: 'value_type', type: 'varchar', nullable: true })
   valueType!: string
 
   /**

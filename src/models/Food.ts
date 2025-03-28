@@ -31,14 +31,14 @@ export class Food {
    * @description The unique identifier used by Livsmedelsverket (The Swedish Food Agency)
    * to reference this food item in their database
    */
-  @Column()
+  @Column({ type: 'varchar' })
   number!: string
 
   /**
    * @property {string} name - Name of the food item
    * @description The descriptive name of the food (e.g., "Nöt talg" - Beef tallow)
    */
-  @Column()
+  @Column({ type: 'varchar' })
   name!: string
 
   /**
