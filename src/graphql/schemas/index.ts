@@ -57,6 +57,9 @@ export const typeDefs: DocumentNode = gql`
 
     "Type of measurement (e.g., 'measured', 'calculated') (optional)"
     valueType: String
+
+    "Category of the nutrient (e.g., 'vitamin', 'mineral') (optional)"
+    category: String
   }
 
   """
@@ -75,8 +78,8 @@ export const typeDefs: DocumentNode = gql`
     "Name of the food item"
     name: String!
 
-    "List of nutrition entries for this food item"
-    nutritions: [Nutrition!]!
+    "List of nutrition entries related to this food item, you can filter by category (e.g. 'vitamin')"
+    nutritions(category: [String!]): [Nutrition!]!
   }
 
   """
@@ -141,6 +144,9 @@ export const typeDefs: DocumentNode = gql`
 
     "Optional maximum value for the nutrient (e.g. max protein)"
     max: Float
+
+    "Optional unit of measurement for the nutrient (e.g. 'g', 'mg')"
+    category: String
   }
 
   extend type Query {

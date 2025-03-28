@@ -9,7 +9,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  synchronize: false, // We dont want that typeORM create tables automatically
+  synchronize: false, // Dont want that typeORM create tables automatically
   logging: true,
   entities: ['src/models/**/*.ts'],
   migrations: ['src/db/migrations/**/*.ts'],

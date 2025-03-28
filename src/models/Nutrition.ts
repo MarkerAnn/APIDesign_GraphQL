@@ -64,6 +64,14 @@ export class Nutrition {
   weightGram!: number
 
   /**
+   * @property {string} category - Category of the nutrient
+   * @description Logical grouping of the nutrient (e.g., "vitamin", "macronutrient", "energy", etc.)
+   * @optional This field may be null if the category is not specified
+   */
+  @Column({ nullable: true })
+  category!: string
+
+  /**
    * @property {string} valueType - Type of the value measurement
    * @description Indicates how the value was determined (e.g., "measured", "calculated")
    * @optional This field may be null if the measurement method is not specified

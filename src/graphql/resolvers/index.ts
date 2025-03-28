@@ -103,7 +103,12 @@ export const resolvers = {
       _: unknown,
       args: {
         name?: string
-        nutrients?: { nutrient: string; min?: number; max?: number }[]
+        nutrients?: {
+          nutrient: string
+          min?: number
+          max?: number
+          category?: string
+        }[]
         first?: number
         sortBy?: 'NAME' | 'NUTRIENT'
         sortDirection?: 'ASC' | 'DESC'
@@ -137,8 +142,14 @@ export const resolvers = {
           const nutrientIdLists: number[][] = []
 
           for (const filter of args.nutrients) {
-            const whereClause: any = {
-              name: ILike(`%${filter.nutrient}%`),
+            const whereClause: any = {}
+
+            if (filter.nutrient) {
+              whereClause.name = ILike(`%${filter.nutrient}%`)
+            }
+
+            if (filter.category) {
+              whereClause.category = filter.category.toLowerCase()
             }
 
             if (filter.min !== undefined && filter.max !== undefined) {
@@ -213,6 +224,19 @@ export const resolvers = {
         console.error('❌ Error in searchFoodsAdvanced:', error)
         throw new Error('Advanced food search failed')
       }
+    },
+  },
+  Food: {
+    nutritions: (parent: Food, args: { category?: string[] }) => {
+      if (!args.category || args.category.length === 0) return parent.nutritions
+
+      const lowerCaseCategories = args.category.map((c) => c.toLowerCase())
+
+      return parent.nutritions.filter((n) =>
+        n.category
+          ? lowerCaseCategories.includes(n.category.toLowerCase())
+          : false
+      )
     },
   },
 }
