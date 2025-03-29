@@ -4,8 +4,12 @@ import {
   Column,
   CreateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm'
 import { Nutrition } from './Nutrition'
+import { Source } from './Source'
+import { Brand } from './Brand'
 
 /**
  * @class Food
@@ -55,4 +59,36 @@ export class Food {
    */
   @OneToMany(() => Nutrition, (nutrition) => nutrition.food)
   nutritions!: Nutrition[]
+
+  /**
+   * @property {number} source_id - Foreign key for the related Source
+   * @description This links the food to its source (e.g., Livsmedelsverket)
+   */
+  @Column({ name: 'source_id', nullable: true })
+  source_id!: number
+
+  /**
+   * @property {number} brand_id - Foreign key for the related Brand
+   * @description This links the food to its brand (e.g., "Scan")
+   */
+  @Column({ name: 'brand_id', nullable: true })
+  brand_id!: number
+
+  /**
+   * @property {Source} source - Source of the food item
+   * @description The source from which this food item was obtained (e.g. Livsmedelsverket, user)
+   * @relations Many-to-one relationship with the Source entity
+   */
+  @ManyToOne(() => Source, (source) => source.foods)
+  @JoinColumn({ name: 'source_id' })
+  source!: Source
+
+  /**
+   * @property {Brand} brand - Brand of the food item
+   * @description The brand associated with this food item (e.g. "Scan")
+   * @relations Many-to-one relationship with the Brand entity
+   */
+  @ManyToOne(() => Source, (source) => source.foods)
+  @JoinColumn({ name: 'brand_id' })
+  brand!: Brand
 }

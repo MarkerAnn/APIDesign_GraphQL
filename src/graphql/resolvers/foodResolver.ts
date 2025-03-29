@@ -1,5 +1,6 @@
-// src/graphql/resolvers/foodResolver.ts
 import { Food } from '../../models/Food'
+import { Source } from '../../models/Source'
+import { Brand } from '../../models/Brand'
 import { FoodService } from '../../services/foodService'
 import { NutrientFilter } from '../../types/NutrientFilter'
 import { sortFoods } from '../../utils/sortFoods'
@@ -103,6 +104,22 @@ export const foodResolvers = {
           ? lowerCaseCategories.includes(n.category.toLowerCase())
           : false
       )
+    },
+    source: async (parent: Food, _args: any, { dataSource }: any) => {
+      if (parent.source) return parent.source // if source is already loaded, return it
+
+      return await dataSource.getRepository(Source).findOne({
+        where: { id: parent.source_id },
+      })
+    },
+    brand: async (parent: Food, _args: any, { dataSource }: any) => {
+      if (parent.brand) return parent.brand // if brand is already loaded, return it
+
+      if (!parent.brand_id) return null // if no brand_id, return null
+
+      return await dataSource.getRepository(Brand).findOne({
+        where: { id: parent.brand_id },
+      })
     },
   },
 }

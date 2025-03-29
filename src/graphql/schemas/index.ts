@@ -62,6 +62,31 @@ export const typeDefs: DocumentNode = gql`
     category: String
   }
 
+  type Source {
+    "Unique identifier for the source entry"
+    id: ID!
+
+    "Name of the source (e.g., 'Livsmedelsverket')"
+    name: String!
+
+    "Type of the source (e.g., 'official', 'user '"
+    type: String!
+
+    "Description of the source (e.g., 'Data fetched from the Swedish Livsmedelsverket')"
+    description: String!
+  }
+
+  type Brand {
+    "Unique identifier for the brand entry"
+    id: ID!
+
+    "Name of the brand (e.g., 'Arla')"
+    name: String!
+
+    "Description of the brand (optional)"
+    description: String
+  }
+
   """
   Food type representing food items with their nutritional information
 
@@ -82,6 +107,19 @@ export const typeDefs: DocumentNode = gql`
     nutritions(category: [String!]): [Nutrition!]!
   }
 
+  extend type Food {
+    """
+    The source of the food data
+    """
+    source: Source!
+  }
+
+  extend type Food {
+    """
+    The brand of the food data
+    """
+    brand: Brand
+  }
   """
   Query type defining available operations for retrieving data
 
