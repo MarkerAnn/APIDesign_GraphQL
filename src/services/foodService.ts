@@ -2,6 +2,7 @@ import { Food } from '../models/Food'
 import { Nutrition } from '../models/Nutrition'
 import { Source } from '../models/Source'
 import { Brand } from '../models/Brand'
+import { Ingredient } from '../models/Ingredient'
 import { AppDataSource } from '../config/data-source'
 import { NutrientFilter } from '../types/NutrientFilter'
 import {
@@ -26,12 +27,14 @@ export class FoodService {
   private nutritionRepository: Repository<Nutrition>
   private sourceRepository: Repository<Source>
   private brandRepository: Repository<Brand>
+  private ingredientRepository: Repository<Ingredient>
 
   constructor() {
     this.foodRepository = AppDataSource.getRepository(Food)
     this.nutritionRepository = AppDataSource.getRepository(Nutrition)
     this.sourceRepository = AppDataSource.getRepository(Source)
     this.brandRepository = AppDataSource.getRepository(Brand)
+    this.ingredientRepository = AppDataSource.getRepository(Ingredient)
   }
 
   /**
@@ -39,7 +42,7 @@ export class FoodService {
    */
   async getFoods(limit: number = 10, offset: number = 0): Promise<Food[]> {
     return await this.foodRepository.find({
-      relations: ['nutritions', 'source', 'brand'],
+      relations: ['nutritions', 'source', 'brand', 'ingredients'],
       take: limit,
       skip: offset,
       order: { id: 'ASC' },
@@ -52,7 +55,7 @@ export class FoodService {
   async getFoodById(id: number): Promise<Food | null> {
     return await this.foodRepository.findOne({
       where: { id },
-      relations: ['nutritions', 'source', 'brand'],
+      relations: ['nutritions', 'source', 'brand', 'ingredients'],
     })
   }
 
@@ -67,7 +70,7 @@ export class FoodService {
       where: afterId ? { id: MoreThan(afterId) } : {},
       order: { id: 'ASC' },
       take: limit,
-      relations: ['nutritions', 'source', 'brand'],
+      relations: ['nutritions', 'source', 'brand', 'ingredients'],
     })
   }
 

@@ -10,6 +10,7 @@ import {
 import { Nutrition } from './Nutrition'
 import { Source } from './Source'
 import { Brand } from './Brand'
+import { Ingredient } from './Ingredient'
 
 /**
  * @class Food
@@ -91,4 +92,12 @@ export class Food {
   @ManyToOne(() => Source, (source) => source.foods)
   @JoinColumn({ name: 'brand_id' })
   brand!: Brand
+
+  /**
+   * @property {Ingredient[]} ingredients - Associated ingredient records
+   * @description Collection of ingredient entries related to this food item
+   * @relations One-to-many relationship with the Ingredient entity
+   */
+  @OneToMany(() => Ingredient, (ingredient) => ingredient.food)
+  ingredients!: Ingredient[]
 }

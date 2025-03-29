@@ -62,6 +62,72 @@ export const typeDefs: DocumentNode = gql`
     category: String
   }
 
+  """
+  Ingredient type representing various ingredients used in a food item
+
+  This type describes the details of individual ingredients associated with
+  a specific food item. It provides information about cooking factors, weights,
+  and other relevant attributes used in nutritional calculations and preparation.
+  """
+  type Ingredient {
+    """
+    Unique identifier for the ingredient entry
+    """
+    id: ID!
+
+    """
+    External identification number for the ingredient (if applicable)
+
+    This could be an ID from another database or system that provides information
+    about the ingredient.
+    """
+    ingredientNumber: String
+
+    """
+    Descriptive name of the ingredient (e.g., 'Salt', 'Butter')
+
+    This is the name used to identify the ingredient within the food item.
+    """
+    ingredientName: String!
+
+    """
+    Water factor used in nutritional calculations (optional)
+
+    This value represents the proportion of water present in the ingredient and
+    can be used to adjust calculations related to moisture content.
+    """
+    waterFactor: Float
+
+    """
+    Fat factor used in nutritional calculations (optional)
+
+    This value represents the proportion of fat present in the ingredient and
+    can be used to adjust calculations related to fat content.
+    """
+    fatFactor: Float
+
+    """
+    Weight of the ingredient before cooking (optional)
+
+    This is the raw weight of the ingredient before any cooking or processing has occurred.
+    """
+    weightBeforeCooking: Float
+
+    """
+    Weight of the ingredient after cooking (optional)
+
+    This is the final weight of the ingredient after it has been cooked or processed.
+    """
+    weightAfterCooking: Float
+
+    """
+    Description of the cooking factor (e.g., 'Fried', 'Boiled', 'Baked')
+
+    This provides additional information about how the ingredient was prepared.
+    """
+    cookingFactor: String
+  }
+
   type Source {
     "Unique identifier for the source entry"
     id: ID!
@@ -120,6 +186,17 @@ export const typeDefs: DocumentNode = gql`
     """
     brand: Brand
   }
+
+  extend type Food {
+    """
+    List of ingredients associated with the food item
+
+    Each ingredient provides details about its preparation, weight changes, and
+    any relevant nutritional factors. Returns an empty list if no ingredients are associated.
+    """
+    ingredients: [Ingredient!]!
+  }
+
   """
   Query type defining available operations for retrieving data
 
@@ -131,6 +208,19 @@ export const typeDefs: DocumentNode = gql`
 
     "Get one specific food by ID with its nutrition information"
     food(id: ID!): Food
+
+    "Get all nutrition information with optional filtering by category"
+    nutritions(
+      category: [String]
+      limit: Int = 10
+      offset: Int = 0
+    ): [Nutrition!]!
+    "Get all ingredients"
+    ingredients(limit: Int = 10, offset: Int = 0): [Ingredient!]!
+    "Get all sources"
+    sources(limit: Int = 10, offset: Int = 0): [Source!]!
+    "Get all brands"
+    brands(limit: Int = 10, offset: Int = 0): [Brand!]!
   }
 
   """

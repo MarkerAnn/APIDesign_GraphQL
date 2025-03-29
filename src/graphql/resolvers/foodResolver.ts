@@ -1,6 +1,7 @@
 import { Food } from '../../models/Food'
 import { Source } from '../../models/Source'
 import { Brand } from '../../models/Brand'
+import { Ingredient } from '../../models/Ingredient'
 import { FoodService } from '../../services/foodService'
 import { NutrientFilter } from '../../types/NutrientFilter'
 import { sortFoods } from '../../utils/sortFoods'
@@ -119,6 +120,15 @@ export const foodResolvers = {
 
       return await dataSource.getRepository(Brand).findOne({
         where: { id: parent.brand_id },
+      })
+    },
+    ingredients: async (parent: Food, _args: any, { dataSource }: any) => {
+      if (parent.ingredients) return parent.ingredients // if ingredients are already loaded, return them
+
+      if (!parent.id) return [] // if no food id, return empty array
+
+      return await dataSource.getRepository(Ingredient).find({
+        where: { foodId: parent.id },
       })
     },
   },
