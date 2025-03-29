@@ -1,5 +1,8 @@
-// src/graphql/resolvers/index.ts
 import { foodResolvers } from './foodResolver'
+import { nutritionResolvers } from './nutritionResolver'
+import { ingredientResolvers } from './ingredientResolver'
+import { sourceResolvers } from './sourceResolver'
+import { brandResolvers } from './brandResolver'
 
 /**
  * @module Resolvers
@@ -13,13 +16,18 @@ import { foodResolvers } from './foodResolver'
 export const resolvers = {
   Query: {
     ...foodResolvers.Query,
-    // Add resolvers from other domains when you add them
-    // ...userResolvers.Query,
-    // ...authResolvers.Query,
+    ...nutritionResolvers.Query,
+    ...ingredientResolvers.Query,
+    ...sourceResolvers.Query,
+    ...brandResolvers.Query,
   },
 
   // Type resolvers
   Food: foodResolvers.Food,
+  Nutrition: nutritionResolvers.Nutrition,
+  Ingredient: ingredientResolvers.Ingredient,
+  Source: sourceResolvers.Source,
+  Brand: brandResolvers.Brand,
 
   // Add other Type resolvers when you add them
   // User: userResolvers.User,

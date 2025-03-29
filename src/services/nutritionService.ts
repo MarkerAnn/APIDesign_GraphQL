@@ -1,14 +1,8 @@
-import { DataSource } from 'typeorm'
+import { AppDataSource } from '../config/data-source'
 import { Nutrition } from '../models/Nutrition'
 import createError from 'http-errors'
 
 export class NutritionService {
-  private dataSource: DataSource
-
-  constructor(dataSource: DataSource) {
-    this.dataSource = dataSource
-  }
-
   /**
    * Fetch a single nutrition by its ID
    */
@@ -17,9 +11,9 @@ export class NutritionService {
       throw new createError.BadRequest('Invalid ID provided.')
     }
 
-    const nutrition = await this.dataSource
-      .getRepository(Nutrition)
-      .findOneBy({ id })
+    const nutrition = await AppDataSource.getRepository(Nutrition).findOneBy({
+      id,
+    })
 
     if (!nutrition) {
       throw new createError.NotFound(`Nutrition with ID ${id} not found.`)
@@ -40,9 +34,8 @@ export class NutritionService {
       throw new createError.BadRequest('Invalid limit or offset value.')
     }
 
-    const query = this.dataSource
-      .getRepository(Nutrition)
-      .createQueryBuilder('nutrition')
+    const query =
+      AppDataSource.getRepository(Nutrition).createQueryBuilder('nutrition')
 
     if (category && category.length > 0) {
       query.where('nutrition.category IN (:...categories)', {

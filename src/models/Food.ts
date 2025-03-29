@@ -89,7 +89,7 @@ export class Food {
    * @description The brand associated with this food item (e.g. "Scan")
    * @relations Many-to-one relationship with the Brand entity
    */
-  @ManyToOne(() => Source, (source) => source.foods)
+  @ManyToOne(() => Brand, (brand) => brand.foods)
   @JoinColumn({ name: 'brand_id' })
   brand!: Brand
 

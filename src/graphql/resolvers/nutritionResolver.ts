@@ -1,9 +1,11 @@
 import { NutritionService } from '../../services/nutritionService'
 import { AppDataSource } from '../../config/data-source'
 import { handleError } from '../../utils/errorHandler'
+import createError from 'http-errors'
+import { Food } from '../../models/Food'
 
 // Create an instance of NutritionService
-const nutritionService = new NutritionService(AppDataSource)
+const nutritionService = new NutritionService()
 
 export const nutritionResolvers = {
   Query: {
@@ -21,7 +23,7 @@ export const nutritionResolvers = {
           args.category
         )
       } catch (error) {
-        return handleError(error)
+        throw handleError(error)
       }
     },
 
@@ -30,9 +32,32 @@ export const nutritionResolvers = {
      */
     nutrition: async (_: unknown, args: { id: number }) => {
       try {
-        return await nutritionService.getNutritionById(args.id)
+        const nutrition = await nutritionService.getNutritionById(args.id)
+        if (!nutrition) throw createError(404, 'Nutrition not found.')
+        return nutrition
       } catch (error) {
-        return handleError(error)
+        throw handleError(error)
+      }
+    },
+  },
+  /**
+   * Fetch all foods associated with a nutrition
+   */
+  Nutrition: {
+    food: async (parent: any, _args: any) => {
+      try {
+        if (!parent.foodId) throw createError(400, 'Invalid food ID.')
+
+        // Fetch the food associated with this nutrition
+        const food = await AppDataSource.getRepository(Food).findOne({
+          where: { id: parent.foodId },
+        })
+
+        if (!food) throw createError(404, 'Food not found.')
+
+        return food // Return the food object
+      } catch (error) {
+        throw handleError(error)
       }
     },
   },

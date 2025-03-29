@@ -33,7 +33,9 @@ async function startServer() {
       '/graphql',
       cors<cors.CorsRequest>(),
       bodyParser.json(),
-      expressMiddleware(server)
+      expressMiddleware(server, {
+        context: async () => ({ dataSource: AppDataSource }),
+      })
     )
 
     const PORT = process.env.PORT || 4000

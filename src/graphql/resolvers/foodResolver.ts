@@ -1,135 +1,119 @@
-import { Food } from '../../models/Food'
-import { Source } from '../../models/Source'
-import { Brand } from '../../models/Brand'
-import { Ingredient } from '../../models/Ingredient'
 import { FoodService } from '../../services/foodService'
-import { NutrientFilter } from '../../types/NutrientFilter'
-import { sortFoods } from '../../utils/sortFoods'
+import { Brand } from '../../models/Brand'
+import { Source } from '../../models/Source'
+import { Ingredient } from '../../models/Ingredient'
+import { AppDataSource } from '../../config/data-source'
 import { encodeCursor, decodeCursor } from '../../utils/pagination'
+import { handleError } from '../../utils/errorHandler'
+import createError from 'http-errors'
 
-// Create an instance of FoodService
 const foodService = new FoodService()
 
 export const foodResolvers = {
   Query: {
     foods: async (_: unknown, args: { limit?: number; offset?: number }) => {
-      return await foodService.getFoods(args.limit ?? 10, args.offset ?? 0)
+      try {
+        return await foodService.getFoods(args.limit ?? 10, args.offset ?? 0)
+      } catch (error) {
+        throw handleError(error)
+      }
     },
 
     food: async (_: unknown, args: { id: number }) => {
-      return await foodService.getFoodById(args.id)
+      try {
+        const food = await foodService.getFoodById(args.id)
+        if (!food) throw createError(404, 'Food not found.')
+        return food
+      } catch (error) {
+        throw handleError(error)
+      }
     },
 
     foodsConnection: async (
       _: unknown,
       args: { first?: number; after?: string }
     ) => {
-      const limit = args.first ?? 10
-      const afterId = args.after ? decodeCursor(args.after) : 0
-
-      const [items, totalCount] = await foodService.getFoodsWithCursor(
-        limit,
-        afterId
-      )
-
-      const edges = items.map((food) => ({
-        node: food,
-        cursor: encodeCursor(food.id),
-      }))
-
-      const hasNextPage = items.length === limit
-      const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null
-
-      return {
-        edges,
-        pageInfo: {
-          hasNextPage,
-          endCursor,
-        },
-        totalCount,
-      }
-    },
-
-    searchFoodsAdvanced: async (
-      _: unknown,
-      args: {
-        name?: string
-        nutrients?: NutrientFilter[]
-        first?: number
-        sortBy?: 'NAME' | 'NUTRIENT'
-        sortDirection?: 'ASC' | 'DESC'
-        sortNutrient?: string
-      }
-    ) => {
       try {
-        // Use the service to perform the search
-        const results = await foodService.searchFoodsAdvanced(
-          args.name,
-          args.nutrients,
-          args.first ?? 20
+        const limit = args.first ?? 10
+        const afterId = args.after ? decodeCursor(args.after) : 0
+
+        const [items, totalCount] = await foodService.getFoodsWithCursor(
+          limit,
+          afterId
         )
 
-        console.log(
-          `🔎 Advanced search → name: ${args.name || 'none'}, filters: ${
-            args.nutrients?.length ?? 0
-          }, results: ${results.length}`
-        )
+        const edges = items.map((food) => ({
+          node: food,
+          cursor: encodeCursor(food.id),
+        }))
 
-        console.log(
-          '📋 Matched food names:',
-          results.map((f) => f.name)
-        )
+        const hasNextPage = items.length === limit
+        const endCursor =
+          edges.length > 0 ? edges[edges.length - 1].cursor : null
 
-        // Sort the results with our utils function
-        return sortFoods(
-          results,
-          args.sortBy ?? 'NAME',
-          args.sortDirection ?? 'ASC',
-          args.sortNutrient
-        )
+        return {
+          edges,
+          pageInfo: { hasNextPage, endCursor },
+          totalCount,
+        }
       } catch (error) {
-        console.error('❌ Error in searchFoodsAdvanced:', error)
-        throw new Error('Advanced food search failed')
+        throw handleError(error)
       }
     },
   },
 
   Food: {
-    nutritions: (parent: Food, args: { category?: string[] }) => {
-      if (!args.category || args.category.length === 0) return parent.nutritions
+    nutritions: async (parent: any, _args: any) => {
+      try {
+        if (!parent.id) throw createError(400, 'Invalid food ID.')
 
-      const lowerCaseCategories = args.category.map((c) => c.toLowerCase())
-
-      return parent.nutritions.filter((n) =>
-        n.category
-          ? lowerCaseCategories.includes(n.category.toLowerCase())
-          : false
-      )
+        return parent.nutritions || []
+      } catch (error) {
+        throw handleError(error)
+      }
     },
-    source: async (parent: Food, _args: any, { dataSource }: any) => {
-      if (parent.source) return parent.source // if source is already loaded, return it
+    source: async (parent: any, _args: any) => {
+      try {
+        if (parent.source) return parent.source
 
-      return await dataSource.getRepository(Source).findOne({
-        where: { id: parent.source_id },
-      })
+        const source = await AppDataSource.getRepository(Source).findOne({
+          where: { id: parent.source_id },
+        })
+
+        if (!source) throw createError(404, 'Source not found.')
+
+        return source
+      } catch (error) {
+        throw handleError(error)
+      }
     },
-    brand: async (parent: Food, _args: any, { dataSource }: any) => {
-      if (parent.brand) return parent.brand // if brand is already loaded, return it
+    brand: async (parent: any, _args: any) => {
+      try {
+        if (!parent.brand_id) return null
 
-      if (!parent.brand_id) return null // if no brand_id, return null
+        const brand = await AppDataSource.getRepository(Brand).findOne({
+          where: { id: parent.brand_id },
+        })
 
-      return await dataSource.getRepository(Brand).findOne({
-        where: { id: parent.brand_id },
-      })
+        if (!brand) throw createError(404, 'Brand not found.')
+
+        return brand
+      } catch (error) {
+        throw handleError(error)
+      }
     },
-    ingredients: async (parent: Food, _args: any, { dataSource }: any) => {
-      if (parent.ingredients) return parent.ingredients // if ingredients are already loaded, return them
+    ingredients: async (parent: any, _args: any) => {
+      try {
+        if (!parent.id) throw createError(400, 'Invalid food ID.')
 
-      if (!parent.id) return [] // if no food id, return empty array
+        const ingredients = await AppDataSource.getRepository(Ingredient).find({
+          where: { foodId: parent.id },
+        })
 
-      return await dataSource.getRepository(Ingredient).find({
-        where: { foodId: parent.id },
-      })
+        return ingredients
+      } catch (error) {
+        throw handleError(error)
+      }
     },
   },
 }
