@@ -33,7 +33,8 @@ export const nutritionResolvers = {
     nutrition: async (_: unknown, args: { id: number }) => {
       try {
         const nutrition = await nutritionService.getNutritionById(args.id)
-        if (!nutrition) throw createError(404, 'Nutrition not found.')
+        if (!nutrition)
+          throw createError(404, `Nutrition with ID ${args.id} not found.`)
         return nutrition
       } catch (error) {
         throw handleError(error)
@@ -53,7 +54,8 @@ export const nutritionResolvers = {
           where: { id: parent.foodId },
         })
 
-        if (!food) throw createError(404, 'Food not found.')
+        if (!food)
+          throw createError(404, `Food with ID ${parent.foodId} not found.`)
 
         return food // Return the food object
       } catch (error) {

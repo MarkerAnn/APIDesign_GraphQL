@@ -43,7 +43,7 @@ export const foodResolvers = {
     food: async (_: unknown, args: { id: number }) => {
       try {
         const food = await foodService.getFoodById(args.id)
-        if (!food) throw createError(404, 'Food not found.')
+        if (!food) throw createError(404, `Food with ID ${args.id} not found.`)
         return food
       } catch (error) {
         throw handleError(error)
@@ -101,7 +101,8 @@ export const foodResolvers = {
           where: { id: parent.source_id },
         })
 
-        if (!source) throw createError(404, 'Source not found.')
+        if (!source)
+          throw createError(404, `Sorce with ID ${parent.source_id} not found.`)
 
         return source
       } catch (error) {
@@ -116,7 +117,8 @@ export const foodResolvers = {
           where: { id: parent.brand_id },
         })
 
-        if (!brand) throw createError(404, 'Brand not found.')
+        if (!brand)
+          throw createError(404, `Brand with ID ${parent.brand_id} not found.`)
 
         return brand
       } catch (error) {

@@ -1,3 +1,4 @@
+import { handleError } from 'utils/errorHandler'
 import { AppDataSource } from '../config/data-source'
 import { Nutrition } from '../models/Nutrition'
 import createError from 'http-errors'
@@ -8,7 +9,7 @@ export class NutritionService {
    */
   async getNutritionById(id: number): Promise<Nutrition> {
     if (!id || isNaN(id)) {
-      throw new createError.BadRequest('Invalid ID provided.')
+      throw createError(400, 'Invalid ID provided.')
     }
 
     const nutrition = await AppDataSource.getRepository(Nutrition).findOneBy({
@@ -16,7 +17,7 @@ export class NutritionService {
     })
 
     if (!nutrition) {
-      throw new createError.NotFound(`Nutrition with ID ${id} not found.`)
+      throw createError(404, `Nutrition with ID ${id} not found.`)
     }
 
     return nutrition
@@ -31,7 +32,7 @@ export class NutritionService {
     category?: string[]
   ) {
     if (limit < 1 || offset < 0) {
-      throw new createError.BadRequest('Invalid limit or offset value.')
+      throw createError(400, 'Invalid limit or offset value.')
     }
 
     const query =
@@ -46,9 +47,7 @@ export class NutritionService {
     try {
       return await query.skip(offset).take(limit).getMany()
     } catch (error) {
-      throw new createError.InternalServerError(
-        'Failed to retrieve nutritions from the database.'
-      )
+      throw handleError(error)
     }
   }
 }

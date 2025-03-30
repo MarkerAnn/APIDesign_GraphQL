@@ -87,12 +87,12 @@ export class FoodService {
         .leftJoinAndSelect('food.nutritions', 'nutrition')
         .take(limit)
 
-      // Filtrera på namn om det anges
+      // Filter by name if provided
       if (name) {
         query.andWhere('food.name ILIKE :name', { name: `%${name}%` })
       }
 
-      // Om näringsämnen anges, filtrera med separata sub-queries för varje nutrient
+      // If nutritions are provided, filter by them, using subqueries
       if (nutrients && nutrients.length > 0) {
         nutrients.forEach((nutrientFilter, index) => {
           query.andWhere(
@@ -119,3 +119,5 @@ export class FoodService {
     }
   }
 }
+
+// TODO: Jsdoc

@@ -26,7 +26,8 @@ export const brandResolvers = {
     brand: async (_: unknown, args: { id: number }) => {
       try {
         const brand = await brandService.getBrandById(args.id)
-        if (!brand) throw createError(404, 'Brand not found.')
+        if (!brand)
+          throw createError(404, `Brand with ID ${args.id} not found.`)
         return brand
       } catch (error) {
         throw handleError(error)
@@ -44,7 +45,7 @@ export const brandResolvers = {
         })
 
         if (!foods || foods.length === 0)
-          throw createError(404, 'No foods found for this brand.')
+          throw createError(404, `No foods found for brand ID ${parent.id}.`)
 
         return foods
       } catch (error) {

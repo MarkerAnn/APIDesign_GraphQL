@@ -1,3 +1,4 @@
+import { handleError } from 'utils/errorHandler'
 import { AppDataSource } from '../config/data-source'
 import { Brand } from '../models/Brand'
 import createError from 'http-errors'
@@ -14,7 +15,7 @@ export class BrandService {
     const brand = await AppDataSource.getRepository(Brand).findOneBy({ id })
 
     if (!brand) {
-      throw new createError.NotFound(`Brand with ID ${id} not found.`)
+      throw createError(404, `Brand with ID ${id} not found.`)
     }
 
     return brand
@@ -25,7 +26,7 @@ export class BrandService {
    */
   async getBrands(limit: number = 10, offset: number = 0): Promise<Brand[]> {
     if (limit < 1 || offset < 0) {
-      throw new createError.BadRequest('Invalid limit or offset value.')
+      throw createError(400, 'Invalid limit or offset value.')
     }
 
     try {
@@ -35,9 +36,7 @@ export class BrandService {
         order: { id: 'ASC' },
       })
     } catch (error) {
-      throw new createError.InternalServerError(
-        'Failed to retrieve brands from the database.'
-      )
+      throw handleError(error)
     }
   }
 }

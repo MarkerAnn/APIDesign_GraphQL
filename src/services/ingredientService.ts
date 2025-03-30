@@ -1,3 +1,4 @@
+import { handleError } from 'utils/errorHandler'
 import { AppDataSource } from '../config/data-source'
 import { Ingredient } from '../models/Ingredient'
 import createError from 'http-errors'
@@ -8,7 +9,7 @@ export class IngredientService {
    */
   async getIngredientById(id: number): Promise<Ingredient> {
     if (!id || isNaN(id)) {
-      throw new createError.BadRequest('Invalid ID provided.')
+      throw createError(400, 'Invalid ID provided.')
     }
 
     const ingredient = await AppDataSource.getRepository(Ingredient).findOneBy({
@@ -16,7 +17,7 @@ export class IngredientService {
     })
 
     if (!ingredient) {
-      throw new createError.NotFound(`Ingredient with ID ${id} not found.`)
+      throw createError(404, `Ingredient with ID ${id} not found.`)
     }
 
     return ingredient
@@ -30,7 +31,7 @@ export class IngredientService {
     offset: number = 0
   ): Promise<Ingredient[]> {
     if (limit < 1 || offset < 0) {
-      throw new createError.BadRequest('Invalid limit or offset value.')
+      throw createError(400, 'Invalid limit or offset value.')
     }
 
     try {
@@ -40,9 +41,7 @@ export class IngredientService {
         order: { id: 'ASC' },
       })
     } catch (error) {
-      throw new createError.InternalServerError(
-        'Failed to retrieve ingredients from the database.'
-      )
+      throw handleError(error)
     }
   }
 }

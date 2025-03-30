@@ -26,7 +26,8 @@ export const sourceResolvers = {
     source: async (_: unknown, args: { id: number }) => {
       try {
         const source = await sourceService.getSourceById(args.id)
-        if (!source) throw createError(404, 'Source not found.')
+        if (!source)
+          throw createError(404, `Source with ID ${args.id} not found.`)
         return source
       } catch (error) {
         throw handleError(error)
@@ -45,7 +46,7 @@ export const sourceResolvers = {
         })
 
         if (!foods || foods.length === 0)
-          throw createError(404, 'No foods found for this source.')
+          throw createError(404, `No foods found for source ID ${parent.id}.`)
 
         return foods
       } catch (error) {

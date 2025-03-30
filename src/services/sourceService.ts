@@ -1,3 +1,4 @@
+import { handleError } from 'utils/errorHandler'
 import { AppDataSource } from '../config/data-source'
 import { Source } from '../models/Source'
 import createError from 'http-errors'
@@ -8,13 +9,13 @@ export class SourceService {
    */
   async getSourceById(id: number): Promise<Source> {
     if (!id || isNaN(id)) {
-      throw new createError.BadRequest('Invalid ID provided.')
+      throw createError(400, 'Invalid ID provided.')
     }
 
     const source = await AppDataSource.getRepository(Source).findOneBy({ id })
 
     if (!source) {
-      throw new createError.NotFound(`Source with ID ${id} not found.`)
+      throw createError(404, `Source with ID ${id} not found.`)
     }
 
     return source
@@ -29,9 +30,7 @@ export class SourceService {
         order: { id: 'ASC' },
       })
     } catch (error) {
-      throw new createError.InternalServerError(
-        'Failed to retrieve sources from the database.'
-      )
+      throw handleError(error)
     }
   }
 }
