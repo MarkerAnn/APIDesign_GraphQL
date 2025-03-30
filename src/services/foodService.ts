@@ -41,7 +41,7 @@ export class FoodService {
         order: { id: 'ASC' },
       })
     } catch (error) {
-      throw new createError.InternalServerError('Failed to fetch foods.')
+      throw handleError(error)
     }
   }
 
@@ -52,13 +52,11 @@ export class FoodService {
         relations: ['nutritions', 'source', 'brand', 'ingredients'],
       })
 
-      if (!food) throw new createError.NotFound(`Food with ID ${id} not found.`)
+      if (!food) throw createError(404, `Food with ID ${id} not found.`)
 
       return food
     } catch (error) {
-      throw error instanceof createError.HttpError
-        ? error
-        : new createError.InternalServerError('Failed to fetch food by ID.')
+      throw handleError(error)
     }
   }
 
@@ -74,9 +72,7 @@ export class FoodService {
         relations: ['nutritions', 'source', 'brand', 'ingredients'],
       })
     } catch (error) {
-      throw new createError.InternalServerError(
-        'Failed to fetch foods with cursor.'
-      )
+      throw handleError(error)
     }
   }
 
@@ -86,51 +82,39 @@ export class FoodService {
     limit: number = 20
   ): Promise<Food[]> {
     try {
-      const queryBuilder = this.foodRepository
+      const query = this.foodRepository
         .createQueryBuilder('food')
         .leftJoinAndSelect('food.nutritions', 'nutrition')
+        .take(limit)
 
+      // Filtrera på namn om det anges
       if (name) {
-        queryBuilder.where('LOWER(food.name) LIKE LOWER(:name)', {
-          name: `%${name}%`,
-        })
-        console.log('✅ Name filtering applied')
+        query.andWhere('food.name ILIKE :name', { name: `%${name}%` })
       }
 
+      // Om näringsämnen anges, filtrera med separata sub-queries för varje nutrient
       if (nutrients && nutrients.length > 0) {
-        nutrients.forEach((filter, index) => {
-          queryBuilder.andWhere(
-            `
-            EXISTS (
-              SELECT 1
-              FROM nutritions n
-              WHERE n.food_id = food.id
-              AND n.name = :nutrient${index}
-              AND (n.value <= :max${index} OR :max${index} IS NULL)
-              AND (n.value >= :min${index} OR :min${index} IS NULL)
-            )
-          `,
+        nutrients.forEach((nutrientFilter, index) => {
+          query.andWhere(
+            `EXISTS (
+              SELECT 1 FROM nutritions n${index}
+              WHERE n${index}.food_id = food.id
+              AND n${index}.name ILIKE :nutrientName${index}
+              AND (COALESCE(:minValue${index}::FLOAT, -1) = -1 OR n${index}.value >= :minValue${index})
+              AND (COALESCE(:maxValue${index}::FLOAT, -1) = -1 OR n${index}.value <= :maxValue${index})
+            )`,
             {
-              [`nutrient${index}`]: filter.nutrient,
-              [`max${index}`]: filter.max ?? null,
-              [`min${index}`]: filter.min ?? null,
+              [`nutrientName${index}`]: `%${nutrientFilter.nutrient}%`,
+              [`minValue${index}`]: nutrientFilter.min ?? -1,
+              [`maxValue${index}`]: nutrientFilter.max ?? -1,
             }
           )
-          console.log(`✅ Applying filter for nutrient: ${filter.nutrient}`)
         })
       }
 
-      queryBuilder.take(limit)
-
-      const foods = await queryBuilder.getMany()
-
-      if (!foods.length)
-        throw new createError.NotFound('No foods found matching the criteria.')
-
-      console.log('🧬 Foods fetched:', foods)
-      return foods
+      const results = await query.getMany()
+      return results
     } catch (error) {
-      console.error('Error in searchFoodsAdvanced:', error)
       throw handleError(error)
     }
   }
