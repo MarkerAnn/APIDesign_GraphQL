@@ -59,7 +59,7 @@ export const queryTypeDefs = gql`
     searchFoodsAdvanced(
       name: String
       nutrients: [NutrientFilter!]
-      first: Int = 20
+      limit: Int = 20
       sortBy: SortBy = NAME
       sortDirection: SortDirection = ASC
       sortNutrient: String

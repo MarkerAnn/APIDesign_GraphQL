@@ -2,6 +2,7 @@ import { FoodService } from '../../services/foodService'
 import { Brand } from '../../models/Brand'
 import { Source } from '../../models/Source'
 import { Ingredient } from '../../models/Ingredient'
+import { NutrientFilter } from '../../types/NutrientFilter'
 import { AppDataSource } from '../../config/data-source'
 import { encodeCursor, decodeCursor } from '../../utils/pagination'
 import { handleError } from '../../utils/errorHandler'
@@ -11,6 +12,26 @@ const foodService = new FoodService()
 
 export const foodResolvers = {
   Query: {
+    searchFoodsAdvanced: async (
+      _: unknown,
+      args: {
+        name?: string
+        nutrients?: NutrientFilter[]
+        limit?: number
+      }
+    ) => {
+      try {
+        const results = await foodService.searchFoodsAdvanced(
+          args.name,
+          args.nutrients,
+          args.limit ?? 20
+        )
+        return results
+      } catch (error) {
+        throw handleError(error)
+      }
+    },
+
     foods: async (_: unknown, args: { limit?: number; offset?: number }) => {
       try {
         return await foodService.getFoods(args.limit ?? 10, args.offset ?? 0)

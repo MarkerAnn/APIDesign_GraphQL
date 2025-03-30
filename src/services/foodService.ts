@@ -5,6 +5,7 @@ import { Brand } from '../models/Brand'
 import { Ingredient } from '../models/Ingredient'
 import { AppDataSource } from '../config/data-source'
 import { NutrientFilter } from '../types/NutrientFilter'
+import { handleError } from '../utils/errorHandler'
 import {
   MoreThan,
   In,
@@ -76,6 +77,61 @@ export class FoodService {
       throw new createError.InternalServerError(
         'Failed to fetch foods with cursor.'
       )
+    }
+  }
+
+  async searchFoodsAdvanced(
+    name?: string,
+    nutrients?: NutrientFilter[],
+    limit: number = 20
+  ): Promise<Food[]> {
+    try {
+      const queryBuilder = this.foodRepository
+        .createQueryBuilder('food')
+        .leftJoinAndSelect('food.nutritions', 'nutrition')
+
+      if (name) {
+        queryBuilder.where('LOWER(food.name) LIKE LOWER(:name)', {
+          name: `%${name}%`,
+        })
+        console.log('✅ Name filtering applied')
+      }
+
+      if (nutrients && nutrients.length > 0) {
+        nutrients.forEach((filter, index) => {
+          queryBuilder.andWhere(
+            `
+            EXISTS (
+              SELECT 1
+              FROM nutritions n
+              WHERE n.food_id = food.id
+              AND n.name = :nutrient${index}
+              AND (n.value <= :max${index} OR :max${index} IS NULL)
+              AND (n.value >= :min${index} OR :min${index} IS NULL)
+            )
+          `,
+            {
+              [`nutrient${index}`]: filter.nutrient,
+              [`max${index}`]: filter.max ?? null,
+              [`min${index}`]: filter.min ?? null,
+            }
+          )
+          console.log(`✅ Applying filter for nutrient: ${filter.nutrient}`)
+        })
+      }
+
+      queryBuilder.take(limit)
+
+      const foods = await queryBuilder.getMany()
+
+      if (!foods.length)
+        throw new createError.NotFound('No foods found matching the criteria.')
+
+      console.log('🧬 Foods fetched:', foods)
+      return foods
+    } catch (error) {
+      console.error('Error in searchFoodsAdvanced:', error)
+      throw handleError(error)
     }
   }
 }
