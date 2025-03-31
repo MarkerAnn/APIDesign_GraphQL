@@ -31,48 +31,4 @@ export const userTypeDefs = gql`
     "The authenticated user"
     user: User!
   }
-
-  """
-  Input type for user registration.
-  """
-  input RegisterInput {
-    "Desired username for new account"
-    username: String!
-
-    "Email address"
-    email: String!
-
-    "Password for the account"
-    password: String!
-  }
-
-  """
-  Input type for user login.
-  """
-  input LoginInput {
-    "Username or email to authenticate with"
-    usernameOrEmail: String!
-
-    "Password for authentication"
-    password: String!
-  }
-
-  """
-  Define queries related to users.
-  """
-  extend type Query {
-    "Fetch a user by their ID"
-    getUser(id: ID!): User
-  }
-
-  """
-  Define mutations related to user authentication.
-  """
-  extend type Mutation {
-    "Register a new user account"
-    register(input: RegisterInput!): AuthPayload!
-
-    "Authenticate and get a token"
-    login(input: LoginInput!): AuthPayload!
-  }
 `

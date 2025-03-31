@@ -3,6 +3,8 @@ import { nutritionQueries } from './queries/nutritionQueries'
 import { ingredientQueries } from './queries/ingredientQueries'
 import { sourceQueries } from './queries/sourceQueries'
 import { brandQueries } from './queries/brandQueries'
+import { userQueries } from './queries/userQueries'
+import { userMutations } from './mutations/userMutations'
 
 /**
  * @module Resolvers
@@ -20,6 +22,7 @@ export const resolvers = {
     ...ingredientQueries.Query,
     ...sourceQueries.Query,
     ...brandQueries.Query,
+    ...userQueries.Query,
   },
 
   // Type resolvers
@@ -29,15 +32,10 @@ export const resolvers = {
   Source: sourceQueries.Source,
   Brand: brandQueries.Brand,
 
-  // Add other Type resolvers when you add them
-  // User: userResolvers.User,
-
   // Add Mutation resolvers when you implement them
-  // Mutation: {
-  //   ...foodResolvers.Mutation,
-  //   ...userResolvers.Mutation,
-  //   ...authResolvers.Mutation,
-  // }
+  Mutation: {
+    ...userMutations.Mutation,
+  },
 }
 
 // TODO: update the jsdic comments for the resolvers

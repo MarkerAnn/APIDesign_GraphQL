@@ -5,6 +5,7 @@ import { ingredientTypeDefs } from './ingredientSchema'
 import { sourceTypeDefs } from './sourceSchema'
 import { brandTypeDefs } from './brandSchema'
 import { queryTypeDefs } from './querySchema'
+import { userTypeDefs } from './user'
 
 export const typeDefs = gql`
   ${foodTypeDefs}
@@ -13,4 +14,5 @@ export const typeDefs = gql`
   ${sourceTypeDefs}
   ${brandTypeDefs}
   ${queryTypeDefs}
+  ${userTypeDefs}
 `

@@ -35,6 +35,28 @@ export const queryTypeDefs = gql`
   }
 
   """
+  Input type for user registration.
+  """
+  input RegisterInput {
+    "Desired username for new account"
+    username: String!
+    "Email address"
+    email: String!
+    "Password for the account"
+    password: String!
+  }
+
+  """
+  Input type for user login.
+  """
+  input LoginInput {
+    "Username or email to authenticate with"
+    usernameOrEmail: String!
+    "Password for authentication"
+    password: String!
+  }
+
+  """
   The root query type for all available operations.
   """
   type Query {
@@ -108,5 +130,18 @@ export const queryTypeDefs = gql`
     Fetch a specific brand by its ID.
     """
     brand(id: ID!): Brand
+
+    """
+    Fetch a specific user by its ID.
+    """
+    getUser(id: ID!): User
+  }
+
+  """
+  The root mutation type for all available operations.
+  """
+  type Mutation {
+    register(input: RegisterInput!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
   }
 `
