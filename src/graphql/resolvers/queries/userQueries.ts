@@ -1,7 +1,7 @@
-import { AppDataSource } from '../../../config/data-source'
-import { User } from '../../../models/User'
+import { UserService } from '../../../services/userService'
 import { handleError } from '../../../utils/errorHandler'
-import createError from 'http-errors'
+
+const userService = new UserService()
 
 export const userQueries = {
   Query: {
@@ -10,14 +10,7 @@ export const userQueries = {
      */
     getUser: async (_: unknown, args: { id: number }) => {
       try {
-        const user = await AppDataSource.getRepository(User).findOne({
-          where: { id: args.id },
-          relations: ['sources'], // Include sources if they are part of the relationship
-        })
-
-        if (!user) throw createError(404, `User with ID ${args.id} not found.`)
-
-        return user
+        return await userService.getUserById(args.id)
       } catch (error) {
         throw handleError(error)
       }

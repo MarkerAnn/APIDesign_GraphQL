@@ -9,6 +9,7 @@ import dotenv from 'dotenv'
 import { AppDataSource } from './config/data-source'
 import { typeDefs } from './graphql/schemas'
 import { resolvers } from './graphql/resolvers'
+import { getAuthContext } from './middleware/auth'
 
 dotenv.config()
 
@@ -34,7 +35,16 @@ async function startServer() {
       cors<cors.CorsRequest>(),
       bodyParser.json(),
       expressMiddleware(server, {
-        context: async () => ({ dataSource: AppDataSource }),
+        context: async ({ req }) => {
+          // Get authentication context
+          const authContext = await getAuthContext(req)
+
+          // Return context with auth info and data source
+          return {
+            ...authContext,
+            dataSource: AppDataSource,
+          }
+        },
       })
     )
 

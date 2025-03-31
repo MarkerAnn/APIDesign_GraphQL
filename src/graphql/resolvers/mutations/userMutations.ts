@@ -1,9 +1,8 @@
-import { AppDataSource } from '../../../config/data-source'
-import { User } from '../../../models/User'
+import { UserService } from '../../../services/userService'
 import { handleError } from '../../../utils/errorHandler'
-import createError from 'http-errors'
-import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+
+const userService = new UserService()
 
 export const userMutations = {
   Mutation: {
@@ -16,14 +15,7 @@ export const userMutations = {
     ) => {
       try {
         const { username, email, password } = args.input
-
-        const hashedPassword = await bcrypt.hash(password, 10)
-        const user = new User()
-        user.username = username
-        user.email = email
-        user.password = hashedPassword
-
-        await AppDataSource.manager.save(user)
+        const user = await userService.register(username, email, password)
 
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
           expiresIn: '1d',
@@ -44,14 +36,7 @@ export const userMutations = {
     ) => {
       try {
         const { usernameOrEmail, password } = args.input
-
-        const user = await AppDataSource.getRepository(User).findOne({
-          where: [{ email: usernameOrEmail }, { username: usernameOrEmail }],
-        })
-
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-          throw createError(401, 'Invalid credentials')
-        }
+        const user = await userService.authenticate(usernameOrEmail, password)
 
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
           expiresIn: '1d',
