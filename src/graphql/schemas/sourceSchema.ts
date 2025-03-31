@@ -19,5 +19,9 @@ export const sourceTypeDefs = gql`
 
     "An array of food items associated with this source"
     foods: [Food!]!
+
+    "The user who created this source entry"
+    user: User!
   }
 `
+// TODO: Add user to the type later

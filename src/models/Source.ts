@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm'
 import { Food } from './Food'
+import { User } from './User'
 
 /**
  * @class Source
@@ -48,4 +55,12 @@ export class Source {
    */
   @OneToMany(() => Food, (food) => food.source)
   foods!: Food[]
+
+  /**
+   * @property {User} user - User who created this source entry
+   * @description The user who contributed or created this source entry
+   * @relations Many-to-one relationship with the User entity
+   */
+  @ManyToOne(() => User, (user) => user.sources, { nullable: false })
+  user!: User
 }
