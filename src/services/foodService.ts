@@ -118,6 +118,90 @@ export class FoodService {
       throw handleError(error)
     }
   }
+
+  async createFood(
+    number: string,
+    name: string,
+    sourceId: number,
+    brandId?: number
+  ) {
+    try {
+      const source = await AppDataSource.getRepository(Source).findOneBy({
+        id: sourceId,
+      })
+      if (!source)
+        throw createError(404, `Source with ID ${sourceId} not found.`)
+
+      let brand = null
+      if (brandId) {
+        brand = await AppDataSource.getRepository(Brand).findOneBy({
+          id: brandId,
+        })
+        if (!brand)
+          throw createError(404, `Brand with ID ${brandId} not found.`)
+      }
+
+      const food = new Food()
+      food.number = number
+      food.name = name
+      food.source_id = sourceId
+      if (brandId) food.brand_id = brandId
+
+      const savedFood = await AppDataSource.getRepository(Food).save(food)
+      return savedFood
+    } catch (error) {
+      throw handleError(error)
+    }
+  }
+
+  async updateFood(id: number, data: Partial<Food>) {
+    try {
+      const foodRepository = AppDataSource.getRepository(Food)
+      const food = await foodRepository.findOneBy({ id })
+      if (!food) throw createError(404, `Food with ID ${id} not found.`)
+
+      if (data.source_id) {
+        const source = await AppDataSource.getRepository(Source).findOneBy({
+          id: data.source_id,
+        })
+        if (!source)
+          throw createError(404, `Source with ID ${data.source_id} not found.`)
+        food.source_id = data.source_id
+      }
+
+      if (data.brand_id !== undefined) {
+        if (data.brand_id === null) {
+          food.brand_id = null
+        } else {
+          const brand = await AppDataSource.getRepository(Brand).findOneBy({
+            id: data.brand_id,
+          })
+          if (!brand)
+            throw createError(404, `Brand with ID ${data.brand_id} not found.`)
+          food.brand_id = data.brand_id
+        }
+      }
+
+      Object.assign(food, data)
+      const updatedFood = await foodRepository.save(food)
+      return updatedFood
+    } catch (error) {
+      throw handleError(error)
+    }
+  }
+
+  async deleteFood(id: number) {
+    try {
+      const foodRepository = AppDataSource.getRepository(Food)
+      const food = await foodRepository.findOneBy({ id })
+      if (!food) throw createError(404, `Food with ID ${id} not found.`)
+
+      await foodRepository.remove(food)
+      return true
+    } catch (error) {
+      throw handleError(error)
+    }
+  }
 }
 
 // TODO: Jsdoc

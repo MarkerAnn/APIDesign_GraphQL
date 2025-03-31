@@ -73,7 +73,7 @@ export class Food {
    * @description This links the food to its brand (e.g., "Scan")
    */
   @Column({ name: 'brand_id', nullable: true })
-  brand_id!: number
+  brand_id!: number | null
 
   /**
    * @property {Source} source - Source of the food item

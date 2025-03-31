@@ -5,6 +5,7 @@ import { sourceQueries } from './queries/sourceQueries'
 import { brandQueries } from './queries/brandQueries'
 import { userQueries } from './queries/userQueries'
 import { userMutations } from './mutations/userMutations'
+import { foodMutations } from './mutations/foodMutations'
 
 /**
  * @module Resolvers
@@ -35,6 +36,7 @@ export const resolvers = {
   // Add Mutation resolvers when you implement them
   Mutation: {
     ...userMutations.Mutation,
+    ...foodMutations.Mutation,
   },
 }
 

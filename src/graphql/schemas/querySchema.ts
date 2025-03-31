@@ -57,6 +57,40 @@ export const queryTypeDefs = gql`
   }
 
   """
+  Input type for creating a new food item.
+  """
+  input CreateFoodInput {
+    "External identifier for the food"
+    number: String!
+
+    "Name of the food item"
+    name: String!
+
+    "Source ID the food belongs to"
+    sourceId: ID!
+
+    "Optional brand ID"
+    brandId: ID
+  }
+
+  """
+  Input type for updating a food item.
+  """
+  input UpdateFoodInput {
+    "External identifier for the food (optional for update)"
+    number: String
+
+    "Name of the food item (optional for update)"
+    name: String
+
+    "Source ID the food belongs to (optional for update)"
+    sourceId: ID
+
+    "Optional brand ID (optional for update)"
+    brandId: ID
+  }
+
+  """
   The root query type for all available operations.
   """
   type Query {
@@ -141,7 +175,19 @@ export const queryTypeDefs = gql`
   The root mutation type for all available operations.
   """
   type Mutation {
+    "Register a new user"
     register(input: RegisterInput!): AuthPayload!
+
+    "Login an existing user"
     login(input: LoginInput!): AuthPayload!
+
+    "Create a new food item (requires authentication)"
+    createFood(input: CreateFoodInput!): Food!
+
+    "Update an existing food item (requires authentication)"
+    updateFood(id: ID!, input: UpdateFoodInput!): Food!
+
+    "Delete a food item (requires authentication)"
+    deleteFood(id: ID!): Boolean!
   }
 `
