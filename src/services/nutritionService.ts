@@ -1,4 +1,4 @@
-import { handleError } from 'utils/errorHandler'
+import { handleError } from '../utils/errorHandler'
 import { AppDataSource } from '../config/data-source'
 import { Nutrition } from '../models/Nutrition'
 import createError from 'http-errors'
