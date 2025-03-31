@@ -1,8 +1,8 @@
-import { foodResolvers } from './foodResolver'
-import { nutritionResolvers } from './nutritionResolver'
-import { ingredientResolvers } from './ingredientResolver'
-import { sourceResolvers } from './sourceResolver'
-import { brandResolvers } from './brandResolver'
+import { foodQueries } from './queries/foodQueries'
+import { nutritionQueries } from './queries/nutritionQueries'
+import { ingredientQueries } from './queries/ingredientQueries'
+import { sourceQueries } from './queries/sourceQueries'
+import { brandQueries } from './queries/brandQueries'
 
 /**
  * @module Resolvers
@@ -15,19 +15,19 @@ import { brandResolvers } from './brandResolver'
 
 export const resolvers = {
   Query: {
-    ...foodResolvers.Query,
-    ...nutritionResolvers.Query,
-    ...ingredientResolvers.Query,
-    ...sourceResolvers.Query,
-    ...brandResolvers.Query,
+    ...foodQueries.Query,
+    ...nutritionQueries.Query,
+    ...ingredientQueries.Query,
+    ...sourceQueries.Query,
+    ...brandQueries.Query,
   },
 
   // Type resolvers
-  Food: foodResolvers.Food,
-  Nutrition: nutritionResolvers.Nutrition,
-  Ingredient: ingredientResolvers.Ingredient,
-  Source: sourceResolvers.Source,
-  Brand: brandResolvers.Brand,
+  Food: foodQueries.Food,
+  Nutrition: nutritionQueries.Nutrition,
+  Ingredient: ingredientQueries.Ingredient,
+  Source: sourceQueries.Source,
+  Brand: brandQueries.Brand,
 
   // Add other Type resolvers when you add them
   // User: userResolvers.User,

@@ -1,13 +1,13 @@
-import { SourceService } from '../../services/sourceService'
-import { AppDataSource } from '../../config/data-source'
-import { Food } from '../../models/Food'
-import { handleError } from '../../utils/errorHandler'
+import { SourceService } from '../../../services/sourceService'
+import { AppDataSource } from '../../../config/data-source'
+import { Food } from '../../../models/Food'
+import { handleError } from '../../../utils/errorHandler'
 import createError from 'http-errors'
 
 // Create an instance of SourceService
 const sourceService = new SourceService()
 
-export const sourceResolvers = {
+export const sourceQueries = {
   Query: {
     /**
      * Fetch all sources

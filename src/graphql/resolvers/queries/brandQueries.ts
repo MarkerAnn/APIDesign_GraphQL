@@ -1,13 +1,13 @@
-import { BrandService } from '../../services/brandService'
-import { AppDataSource } from '../../config/data-source'
-import { Food } from '../../models/Food'
-import { handleError } from '../../utils/errorHandler'
+import { BrandService } from '../../../services/brandService'
+import { AppDataSource } from '../../../config/data-source'
+import { Food } from '../../../models/Food'
+import { handleError } from '../../../utils/errorHandler'
 import createError from 'http-errors'
 
 // Create an instance of BrandService
 const brandService = new BrandService()
 
-export const brandResolvers = {
+export const brandQueries = {
   Query: {
     /**
      * Fetch all brands with pagination

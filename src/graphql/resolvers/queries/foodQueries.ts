@@ -1,16 +1,16 @@
-import { FoodService } from '../../services/foodService'
-import { Brand } from '../../models/Brand'
-import { Source } from '../../models/Source'
-import { Ingredient } from '../../models/Ingredient'
-import { NutrientFilter } from '../../types/NutrientFilter'
-import { AppDataSource } from '../../config/data-source'
-import { encodeCursor, decodeCursor } from '../../utils/pagination'
-import { handleError } from '../../utils/errorHandler'
+import { FoodService } from '../../../services/foodService'
+import { Brand } from '../../../models/Brand'
+import { Source } from '../../../models/Source'
+import { Ingredient } from '../../../models/Ingredient'
+import { NutrientFilter } from '../../../types/NutrientFilter'
+import { AppDataSource } from '../../../config/data-source'
+import { encodeCursor, decodeCursor } from '../../../utils/pagination'
+import { handleError } from '../../../utils/errorHandler'
 import createError from 'http-errors'
 
 const foodService = new FoodService()
 
-export const foodResolvers = {
+export const foodQueries = {
   Query: {
     searchFoodsAdvanced: async (
       _: unknown,

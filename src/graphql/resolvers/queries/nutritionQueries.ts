@@ -1,13 +1,13 @@
-import { NutritionService } from '../../services/nutritionService'
-import { AppDataSource } from '../../config/data-source'
-import { handleError } from '../../utils/errorHandler'
+import { NutritionService } from '../../../services/nutritionService'
+import { AppDataSource } from '../../../config/data-source'
+import { handleError } from '../../../utils/errorHandler'
 import createError from 'http-errors'
-import { Food } from '../../models/Food'
+import { Food } from '../../../models/Food'
 
 // Create an instance of NutritionService
 const nutritionService = new NutritionService()
 
-export const nutritionResolvers = {
+export const nutritionQueries = {
   Query: {
     /**
      * Fetch all nutritions, optionally filtered by category

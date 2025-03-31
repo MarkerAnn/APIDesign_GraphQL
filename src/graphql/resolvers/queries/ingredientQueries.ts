@@ -1,13 +1,13 @@
-import { IngredientService } from '../../services/ingredientService'
-import { AppDataSource } from '../../config/data-source'
-import { handleError } from '../../utils/errorHandler'
+import { IngredientService } from '../../../services/ingredientService'
+import { AppDataSource } from '../../../config/data-source'
+import { handleError } from '../../../utils/errorHandler'
 import createError from 'http-errors'
-import { Food } from '../../models/Food'
+import { Food } from '../../../models/Food'
 
 // Create an instance of IngredientService
 const ingredientService = new IngredientService()
 
-export const ingredientResolvers = {
+export const ingredientQueries = {
   Query: {
     /**
      * Fetch all ingredients with pagination
