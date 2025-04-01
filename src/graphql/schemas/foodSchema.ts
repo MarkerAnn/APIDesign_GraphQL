@@ -8,9 +8,6 @@ export const foodTypeDefs = gql`
     "Unique identifier for the food item"
     id: ID!
 
-    "External identifier from Livsmedelsverket (The Swedish Food Agency)"
-    number: String!
-
     "The name of the food item"
     name: String!
 

@@ -60,9 +60,6 @@ export const queryTypeDefs = gql`
   Input type for creating a new food item.
   """
   input CreateFoodInput {
-    "External identifier for the food"
-    number: String!
-
     "Name of the food item"
     name: String!
 
@@ -71,12 +68,20 @@ export const queryTypeDefs = gql`
   }
 
   """
+  Input type for creating a brand.
+  """
+  input CreateBrandInput {
+    "Name of the brand"
+    name: String!
+
+    "Optional description of the brand"
+    description: String
+  }
+
+  """
   Input type for updating a food item.
   """
   input UpdateFoodInput {
-    "External identifier for the food (optional for update)"
-    number: String
-
     "Name of the food item (optional for update)"
     name: String
 
@@ -185,6 +190,9 @@ export const queryTypeDefs = gql`
 
     "Create a new food item (requires authentication)"
     createFood(input: CreateFoodInput!): Food!
+
+    "Create a new brand (requires authentication)"
+    createBrand(input: CreateBrandInput!): Brand!
 
     "Update an existing food item (requires authentication)"
     updateFood(id: ID!, input: UpdateFoodInput!): Food!

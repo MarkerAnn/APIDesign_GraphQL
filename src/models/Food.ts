@@ -36,9 +36,10 @@ export class Food {
    * @property {string} number - External identifier from Livsmedelsverket
    * @description The unique identifier used by Livsmedelsverket (The Swedish Food Agency)
    * to reference this food item in their database
+   * @note This is nullable for user-created food items
    */
-  @Column({ type: 'varchar' })
-  number!: string
+  @Column({ type: 'varchar', nullable: true })
+  number!: string | null
 
   /**
    * @property {string} name - Name of the food item

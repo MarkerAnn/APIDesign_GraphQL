@@ -6,6 +6,7 @@ import { brandQueries } from './queries/brandQueries'
 import { userQueries } from './queries/userQueries'
 import { userMutations } from './mutations/userMutations'
 import { foodMutations } from './mutations/foodMutations'
+import { brandMutations } from './mutations/bransMutations'
 
 /**
  * @module Resolvers
@@ -33,13 +34,13 @@ export const resolvers = {
   Source: sourceQueries.Source,
   Brand: brandQueries.Brand,
 
-  // Add Mutation resolvers when you implement them
+  // Add Mutation resolvers
   Mutation: {
     ...userMutations.Mutation,
     ...foodMutations.Mutation,
+    ...brandMutations.Mutation,
   },
 }
-
 // TODO: update the jsdoc comments for the resolvers
 // TODO: cache?
 // TODO: error handling

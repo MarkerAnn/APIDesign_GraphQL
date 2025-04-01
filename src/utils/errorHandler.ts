@@ -28,9 +28,14 @@ export function getGraphQLErrorCode(statusCode: number): string {
  * Centralized Error Handler for GraphQL Resolvers
  *
  * Converts HTTP Errors to GraphQL Errors with proper status codes.
+ * Handles both HTTP errors and standard JavaScript errors with
+ * appropriate GraphQL error formats.
  */
-
 export function handleError(error: any) {
+  // Log the error for debugging
+  console.error('Error details:', error)
+
+  // If it's an HTTP error from http-errors package
   if (createError.isHttpError(error)) {
     throw new GraphQLError(error.message, {
       extensions: {
@@ -40,8 +45,18 @@ export function handleError(error: any) {
     })
   }
 
-  console.error('Unhandled Error: ', error)
-  throw new GraphQLError('An unexpected error occurred.', {
+  // If it's a standard JavaScript Error but not from http-errors
+  if (error instanceof Error) {
+    throw new GraphQLError(error.message || 'An error occurred', {
+      extensions: {
+        code: 'INTERNAL_SERVER_ERROR',
+        status: 500,
+      },
+    })
+  }
+
+  // For completely unknown errors
+  throw new GraphQLError('An unexpected error occurred', {
     extensions: { code: 'INTERNAL_SERVER_ERROR', status: 500 },
   })
 }
