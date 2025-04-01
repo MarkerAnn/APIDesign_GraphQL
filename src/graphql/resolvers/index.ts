@@ -40,11 +40,7 @@ export const resolvers = {
   },
 }
 
-// TODO: update the jsdic comments for the resolvers
-// TODO: Split this up later, e.g. food.resolver.ts and index.ts (imports and collects all resolvers)
+// TODO: update the jsdoc comments for the resolvers
 // TODO: cache?
 // TODO: error handling
-// TODO: Add fallback logic for undefined, null, etc:
-// if (!args.nutrient) {
-//   throw new Error('Missing nutrient argument')
-// }
+// TODO: Add fallback logic for undefined, null, etc

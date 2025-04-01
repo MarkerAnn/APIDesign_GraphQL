@@ -66,9 +66,6 @@ export const queryTypeDefs = gql`
     "Name of the food item"
     name: String!
 
-    "Source ID the food belongs to"
-    sourceId: ID!
-
     "Optional brand ID"
     brandId: ID
   }

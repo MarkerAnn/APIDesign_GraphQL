@@ -15,15 +15,24 @@ export const foodMutations = {
           input: {
             number: string
             name: string
-            sourceId: number
             brandId?: number
           }
         },
         context: AuthContext
       ) => {
         try {
-          const { number, name, sourceId, brandId } = args.input
-          return await foodService.createFood(number, name, sourceId, brandId)
+          const { number, name, brandId } = args.input
+
+          // Always use sourceId 2 for regular users
+          const sourceId = 2
+
+          return await foodService.createFood(
+            number,
+            name,
+            context.user!.id,
+            sourceId,
+            brandId
+          )
         } catch (error) {
           throw handleError(error)
         }

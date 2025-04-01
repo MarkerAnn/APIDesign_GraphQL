@@ -24,4 +24,3 @@ export const sourceTypeDefs = gql`
     user: User!
   }
 `
-// TODO: Add user to the type later

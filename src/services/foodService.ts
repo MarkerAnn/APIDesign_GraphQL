@@ -122,15 +122,16 @@ export class FoodService {
   async createFood(
     number: string,
     name: string,
-    sourceId: number,
+    userId: number,
+    sourceId: number = 2, // Default to 2 for user-added foods
     brandId?: number
   ) {
     try {
-      const source = await AppDataSource.getRepository(Source).findOneBy({
-        id: sourceId,
-      })
-      if (!source)
+      // Fetch source from the database
+      const source = await this.sourceRepository.findOneBy({ id: sourceId })
+      if (!source) {
         throw createError(404, `Source with ID ${sourceId} not found.`)
+      }
 
       let brand = null
       if (brandId) {
@@ -145,6 +146,7 @@ export class FoodService {
       food.number = number
       food.name = name
       food.source_id = sourceId
+      food.createdBy = userId // Set the creator of the food item
       if (brandId) food.brand_id = brandId
 
       const savedFood = await AppDataSource.getRepository(Food).save(food)

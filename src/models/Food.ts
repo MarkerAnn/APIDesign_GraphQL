@@ -11,6 +11,7 @@ import { Nutrition } from './Nutrition'
 import { Source } from './Source'
 import { Brand } from './Brand'
 import { Ingredient } from './Ingredient'
+import { User } from './User'
 
 /**
  * @class Food
@@ -47,11 +48,36 @@ export class Food {
   name!: string
 
   /**
+   * @property {number} brand_id - Foreign key for the related Brand
+   * @description This links the food to its brand (e.g., "Scan")
+   */
+  @Column({ name: 'brand_id', nullable: true })
+  brand_id!: number | null
+
+  /**
+   * @property {number} createdBy - ID of the user who created the food item (null for official sources)
+   * @description This field is used to track the user who added this food item to the database.
+   * It is nullable to accommodate food items that are sourced from official databases
+   */
+  @Column({ name: 'created_by', nullable: true })
+  createdBy?: number | null
+
+  /**
    * @property {Date} createdAt - Timestamp of record creation
    * @description Automatically generated timestamp when the food record was added to the database
    */
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date
+
+  /**
+   * @property {User} creator - User who created the food item
+   * @description The user who added this food item to the database
+   * @relations Many-to-one relationship with the User entity
+   * @note This field is nullable to accommodate food items that are sourced from official databases
+   */
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'created_by' })
+  creator?: User | null
 
   /**
    * @property {Nutrition[]} nutritions - Associated nutrition records
@@ -66,14 +92,7 @@ export class Food {
    * @description This links the food to its source (e.g., Livsmedelsverket)
    */
   @Column({ name: 'source_id', nullable: true })
-  source_id!: number
-
-  /**
-   * @property {number} brand_id - Foreign key for the related Brand
-   * @description This links the food to its brand (e.g., "Scan")
-   */
-  @Column({ name: 'brand_id', nullable: true })
-  brand_id!: number | null
+  source_id?: number | null
 
   /**
    * @property {Source} source - Source of the food item
