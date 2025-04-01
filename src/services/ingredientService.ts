@@ -34,14 +34,10 @@ export class IngredientService {
       throw createError(400, 'Invalid limit or offset value.')
     }
 
-    try {
-      return await AppDataSource.getRepository(Ingredient).find({
-        skip: offset,
-        take: limit,
-        order: { id: 'ASC' },
-      })
-    } catch (error) {
-      throw handleError(error)
-    }
+    return await AppDataSource.getRepository(Ingredient).find({
+      skip: offset,
+      take: limit,
+      order: { id: 'ASC' },
+    })
   }
 }

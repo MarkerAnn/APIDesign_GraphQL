@@ -25,12 +25,8 @@ export class SourceService {
    * Fetch a list of all sources
    */
   async getSources(): Promise<Source[]> {
-    try {
-      return await AppDataSource.getRepository(Source).find({
-        order: { id: 'ASC' },
-      })
-    } catch (error) {
-      throw handleError(error)
-    }
+    return await AppDataSource.getRepository(Source).find({
+      order: { id: 'ASC' },
+    })
   }
 }

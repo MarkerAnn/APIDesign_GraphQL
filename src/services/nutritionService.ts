@@ -43,11 +43,6 @@ export class NutritionService {
         categories: category,
       })
     }
-
-    try {
-      return await query.skip(offset).take(limit).getMany()
-    } catch (error) {
-      throw handleError(error)
-    }
+    return await query.skip(offset).take(limit).getMany()
   }
 }
