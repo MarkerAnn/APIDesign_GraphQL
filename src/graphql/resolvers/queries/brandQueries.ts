@@ -33,7 +33,23 @@ export const brandQueries = {
         throw handleError(error)
       }
     },
+
+    /**
+     * Fetch brands by name
+     */
+    searchBrands: async (
+      _: unknown,
+      args: { name: string; limit?: number }
+    ) => {
+      try {
+        const limit = args.limit || 10
+        return await brandService.searchBrandsByName(args.name, limit)
+      } catch (error) {
+        throw handleError(error)
+      }
+    },
   },
+
   /**
    * Fetch all foods associated with a brand
    */
@@ -44,10 +60,7 @@ export const brandQueries = {
           where: { brand_id: parent.id },
         })
 
-        if (!foods || foods.length === 0)
-          throw createError(404, `No foods found for brand ID ${parent.id}.`)
-
-        return foods
+        return foods || []
       } catch (error) {
         throw handleError(error)
       }

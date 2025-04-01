@@ -1,6 +1,7 @@
 import { handleError } from '../utils/errorHandler'
 import { AppDataSource } from '../config/data-source'
 import { Brand } from '../models/Brand'
+import { ILike } from 'typeorm'
 import createError from 'http-errors'
 
 export class BrandService {
@@ -34,6 +35,24 @@ export class BrandService {
         skip: offset,
         take: limit,
         order: { id: 'ASC' },
+      })
+    } catch (error) {
+      throw handleError(error)
+    }
+  }
+
+  /**
+   * Search for brands by name
+   * @param name Partial name to search for
+   * @param limit Maximum number of results to return
+   * @returns Array of matching brands
+   */
+  async searchBrandsByName(name: string, limit: number = 10): Promise<Brand[]> {
+    try {
+      return await AppDataSource.getRepository(Brand).find({
+        where: { name: ILike(`%${name}%`) },
+        take: limit,
+        order: { name: 'ASC' },
       })
     } catch (error) {
       throw handleError(error)

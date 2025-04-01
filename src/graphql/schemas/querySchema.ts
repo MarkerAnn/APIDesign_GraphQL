@@ -66,8 +66,8 @@ export const queryTypeDefs = gql`
     "Name of the food item"
     name: String!
 
-    "Optional brand ID"
-    brandId: ID
+    "Optional brand name - will be created if it doesn't exist"
+    brandName: String
   }
 
   """
@@ -161,6 +161,11 @@ export const queryTypeDefs = gql`
     Fetch a specific brand by its ID.
     """
     brand(id: ID!): Brand
+
+    """
+    Search for brands by name (for autocomplete)
+    """
+    searchBrands(name: String!, limit: Int = 10): [Brand!]!
 
     """
     Fetch a specific user by its ID.

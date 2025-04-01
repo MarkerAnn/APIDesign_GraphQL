@@ -5,7 +5,6 @@ import {
   CreateDateColumn,
   OneToMany,
 } from 'typeorm'
-import { Source } from './Source'
 
 /**
  * @class User
@@ -50,12 +49,4 @@ export class User {
    */
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date
-
-  /**
-   * @property {Source[]} sources - Associated sources created by the user
-   * @description One-to-many relationship with the Source entity
-   * @relations One user can create multiple sources
-   */
-  @OneToMany(() => Source, (source) => source.user)
-  sources!: Source[]
 }

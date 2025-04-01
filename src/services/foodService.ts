@@ -6,15 +6,7 @@ import { Ingredient } from '../models/Ingredient'
 import { AppDataSource } from '../config/data-source'
 import { NutrientFilter } from '../types/NutrientFilter'
 import { handleError } from '../utils/errorHandler'
-import {
-  MoreThan,
-  In,
-  ILike,
-  Between,
-  MoreThanOrEqual,
-  LessThanOrEqual,
-  Repository,
-} from 'typeorm'
+import { MoreThan, ILike, Repository } from 'typeorm'
 import createError from 'http-errors'
 
 export class FoodService {
@@ -123,9 +115,9 @@ export class FoodService {
     number: string,
     name: string,
     userId: number,
-    sourceId: number = 2, // Default to 2 for user-added foods
-    brandId?: number
-  ) {
+    sourceId: number = 2,
+    brandName?: string
+  ): Promise<Food> {
     try {
       // Fetch source from the database
       const source = await this.sourceRepository.findOneBy({ id: sourceId })
@@ -133,24 +125,34 @@ export class FoodService {
         throw createError(404, `Source with ID ${sourceId} not found.`)
       }
 
-      let brand = null
-      if (brandId) {
-        brand = await AppDataSource.getRepository(Brand).findOneBy({
-          id: brandId,
+      let brandId = null
+
+      // If brandName is provided, find the brand
+      if (brandName) {
+        const brand = await this.brandRepository.findOne({
+          where: { name: ILike(brandName) },
         })
-        if (!brand)
-          throw createError(404, `Brand with ID ${brandId} not found.`)
+
+        // If brand doesn't exist, throw an error
+        if (!brand) {
+          throw createError(
+            404,
+            `Brand with name "${brandName}" not found. Please create it first.`
+          )
+        }
+
+        brandId = brand.id
       }
 
+      // Create and save the food
       const food = new Food()
       food.number = number
       food.name = name
       food.source_id = sourceId
-      food.createdBy = userId // Set the creator of the food item
+      food.createdBy = userId
       if (brandId) food.brand_id = brandId
 
-      const savedFood = await AppDataSource.getRepository(Food).save(food)
-      return savedFood
+      return await this.foodRepository.save(food)
     } catch (error) {
       throw handleError(error)
     }
