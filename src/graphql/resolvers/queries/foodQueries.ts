@@ -140,5 +140,3 @@ export const foodQueries = {
     },
   },
 }
-
-// TODO: Handle error handleError in service, not resolver?

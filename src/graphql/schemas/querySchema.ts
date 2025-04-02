@@ -47,6 +47,37 @@ export const queryTypeDefs = gql`
   }
 
   """
+  Input type for required nutrition information when creating a food item.
+  All values should be specified per 100g of the food item.
+  """
+  input NutritionInput {
+    """
+    Amount of carbohydrates in grams per 100g.
+    Must be a non-negative value and should not exceed 100g.
+    """
+    carbohydrates: Float!
+
+    """
+    Amount of protein in grams per 100g.
+    Must be a non-negative value and should not exceed 100g.
+    """
+    protein: Float!
+
+    """
+    Amount of total fat in grams per 100g.
+    Must be a non-negative value and should not exceed 100g.
+    """
+    fat: Float!
+
+    """
+    Energy content in kilocalories (kcal) per 100g.
+    Must be a non-negative value and should be consistent with the macronutrient values
+    (approximately: carbohydrates*4 + protein*4 + fat*9).
+    """
+    kcal: Float!
+  }
+
+  """
   Input type for user login.
   """
   input LoginInput {
@@ -57,14 +88,26 @@ export const queryTypeDefs = gql`
   }
 
   """
-  Input type for creating a new food item.
+  Input type for creating a new food item with required nutritional information.
   """
   input CreateFoodInput {
-    "Name of the food item"
+    """
+    Name of the food item.
+    Should be descriptive and follow standard naming conventions.
+    """
     name: String!
 
-    "Optional brand name - will be created if it doesn't exist"
+    """
+    Optional brand name associated with this food item.
+    The brand must already exist in the system.
+    """
     brandName: String
+
+    """
+    Required nutritional values per 100g of the food item.
+    These values are used to create the basic nutritional profile.
+    """
+    nutrition: NutritionInput!
   }
 
   """
@@ -201,3 +244,4 @@ export const queryTypeDefs = gql`
     deleteFood(id: ID!): Boolean!
   }
 `
+// TODO: Gör mellanslag konsekvent här, dela upp input?

@@ -20,12 +20,18 @@ export const foodMutations = {
           input: {
             name: string
             brandName?: string
+            nutrition: {
+              carbohydrates: number
+              protein: number
+              fat: number
+              kcal: number
+            }
           }
         },
         context: AuthContext
       ) => {
         try {
-          const { name, brandName } = args.input
+          const { name, brandName, nutrition } = args.input
 
           // Always use sourceId 2 for regular users
           const sourceId = 2
@@ -34,6 +40,7 @@ export const foodMutations = {
             name,
             context.user!.id,
             sourceId,
+            nutrition,
             brandName
           )
         } catch (error) {

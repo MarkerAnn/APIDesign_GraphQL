@@ -3,6 +3,7 @@ import { Nutrition } from '../models/Nutrition'
 import { Source } from '../models/Source'
 import { Brand } from '../models/Brand'
 import { Ingredient } from '../models/Ingredient'
+import { NutritionService } from './nutritionService'
 import { AppDataSource } from '../config/data-source'
 import { NutrientFilter } from '../types/NutrientFilter'
 import { MoreThan, ILike, Repository } from 'typeorm'
@@ -20,6 +21,7 @@ export class FoodService {
   private sourceRepository: Repository<Source>
   private brandRepository: Repository<Brand>
   private ingredientRepository: Repository<Ingredient>
+  private nutritionService: NutritionService
 
   constructor() {
     this.foodRepository = AppDataSource.getRepository(Food)
@@ -27,6 +29,7 @@ export class FoodService {
     this.sourceRepository = AppDataSource.getRepository(Source)
     this.brandRepository = AppDataSource.getRepository(Brand)
     this.ingredientRepository = AppDataSource.getRepository(Ingredient)
+    this.nutritionService = new NutritionService()
   }
 
   /**
@@ -112,11 +115,12 @@ export class FoodService {
   }
 
   /**
-   * Create a new food item
+   * Create a new food item with basic nutritional information
    *
    * @param name Name of the food
    * @param userId ID of the user creating the food
    * @param sourceId Source ID (defaults to 2 for user-created foods)
+   * @param nutritionData Basic nutritional data (carbs, protein, fat, kcal)
    * @param brandName Optional brand name
    * @returns The created food item
    * @throws HTTP 404 error if source or brand not found
@@ -125,91 +129,141 @@ export class FoodService {
     name: string,
     userId: number,
     sourceId: number = 2,
+    nutritionData: {
+      carbohydrates: number
+      protein: number
+      fat: number
+      kcal: number
+    },
     brandName?: string
   ): Promise<Food> {
-    // Fetch source from the database
-    const source = await this.sourceRepository.findOneBy({ id: sourceId })
-    if (!source) {
-      throw createError(404, `Source with ID ${sourceId} not found.`)
-    }
+    // Use transaction to ensure data integrity
+    return await AppDataSource.transaction(
+      async (transactionalEntityManager) => {
+        // Fetch source from the database
+        const source = await this.sourceRepository.findOneBy({ id: sourceId })
+        if (!source) {
+          throw createError(404, `Source with ID ${sourceId} not found.`)
+        }
 
-    let brandId = null
+        let brandId = null
 
-    // If brandName is provided, find the brand
-    if (brandName) {
-      const brand = await this.brandRepository.findOne({
-        where: { name: ILike(brandName) },
-      })
+        // If brandName is provided, find the brand
+        if (brandName) {
+          const brand = await this.brandRepository.findOne({
+            where: { name: ILike(brandName) },
+          })
 
-      // If brand doesn't exist, throw an error
-      if (!brand) {
-        throw createError(
-          404,
-          `Brand with name "${brandName}" not found. Please create it first.`
+          // If brand doesn't exist, throw an error
+          if (!brand) {
+            throw createError(
+              404,
+              `Brand with name "${brandName}" not found. Please create it first.`
+            )
+          }
+
+          brandId = brand.id
+        }
+
+        // Create and save the food
+        const food = new Food()
+        food.name = name
+        food.source_id = sourceId
+        food.createdBy = userId
+        food.number = null // Set number to null for user-created foods
+        if (brandId) food.brand_id = brandId
+
+        // Save the food first to get an ID
+        const savedFood = await transactionalEntityManager.save(food)
+
+        // Create basic nutrition entries using the nutrition service
+        await this.nutritionService.createBasicNutritions(
+          savedFood.id,
+          nutritionData,
+          transactionalEntityManager
         )
+
+        // Get and return the saved food with relations
+        return await this.getFoodById(savedFood.id)
       }
-
-      brandId = brand.id
-    }
-
-    // Create and save the food
-    const food = new Food()
-    food.name = name
-    food.source_id = sourceId
-    food.createdBy = userId
-    food.number = null // Set number to null for user-created foods
-    if (brandId) food.brand_id = brandId
-
-    return await this.foodRepository.save(food)
+    )
   }
 
   /**
    * Update an existing food item
    */
   async updateFood(id: number, data: Partial<Food>) {
-    const food = await this.foodRepository.findOneBy({ id })
-    if (!food) throw createError(404, `Food with ID ${id} not found.`)
+    return await AppDataSource.transaction(
+      async (transactionalEntityManager) => {
+        const food = await this.foodRepository.findOneBy({ id })
+        if (!food) throw createError(404, `Food with ID ${id} not found.`)
 
-    if (data.source_id) {
-      const source = await this.sourceRepository.findOneBy({
-        id: data.source_id,
-      })
-      if (!source)
-        throw createError(404, `Source with ID ${data.source_id} not found.`)
-      food.source_id = data.source_id
-    }
+        if (data.source_id) {
+          const source = await this.sourceRepository.findOneBy({
+            id: data.source_id,
+          })
+          if (!source)
+            throw createError(
+              404,
+              `Source with ID ${data.source_id} not found.`
+            )
+          food.source_id = data.source_id
+        }
 
-    if (data.brand_id !== undefined) {
-      if (data.brand_id === null) {
-        food.brand_id = null
-      } else {
-        const brand = await this.brandRepository.findOneBy({
-          id: data.brand_id,
-        })
-        if (!brand)
-          throw createError(404, `Brand with ID ${data.brand_id} not found.`)
-        food.brand_id = data.brand_id
+        if (data.brand_id !== undefined) {
+          if (data.brand_id === null) {
+            food.brand_id = null
+          } else {
+            const brand = await this.brandRepository.findOneBy({
+              id: data.brand_id,
+            })
+            if (!brand)
+              throw createError(
+                404,
+                `Brand with ID ${data.brand_id} not found.`
+              )
+            food.brand_id = data.brand_id
+          }
+        }
+
+        // Remove number from update data to prevent changes
+        if ('number' in data) {
+          delete data.number
+        }
+
+        Object.assign(food, data)
+        await transactionalEntityManager.save(food)
+
+        // Return the updated food with relationships
+        return await this.getFoodById(food.id)
       }
-    }
-
-    // Ta bort number från uppdateringsdata för att undvika ändringar
-    if ('number' in data) {
-      delete data.number
-    }
-
-    Object.assign(food, data)
-    return await this.foodRepository.save(food)
+    )
   }
 
   /**
    * Delete a food item
    */
   async deleteFood(id: number) {
-    const food = await this.foodRepository.findOneBy({ id })
-    if (!food) throw createError(404, `Food with ID ${id} not found.`)
+    return await AppDataSource.transaction(
+      async (transactionalEntityManager) => {
+        // Get food with related nutritions for proper cascade delete
+        const food = await this.foodRepository.findOne({
+          where: { id },
+          relations: ['nutritions'],
+        })
 
-    await this.foodRepository.remove(food)
-    return true
+        if (!food) throw createError(404, `Food with ID ${id} not found.`)
+
+        // Delete related nutritions if needed (TypeORM should handle this with cascade)
+        // But if needed explicitly:
+        if (food.nutritions && food.nutritions.length > 0) {
+          await transactionalEntityManager.remove(food.nutritions)
+        }
+
+        // Delete the food
+        await transactionalEntityManager.remove(food)
+        return true
+      }
+    )
   }
 }
-// TODO: Jsdoc
