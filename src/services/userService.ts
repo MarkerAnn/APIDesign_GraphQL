@@ -28,16 +28,19 @@ export class UserService {
     email: string,
     password: string
   ): Promise<User> {
-    const hashedPassword = await bcrypt.hash(password, 10)
+    return await AppDataSource.transaction(
+      async (transactionalEntityManager) => {
+        const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = new User()
-    user.username = username
-    user.email = email
-    user.password = hashedPassword
+        const user = new User()
+        user.username = username
+        user.email = email
+        user.password = hashedPassword
 
-    await AppDataSource.manager.save(user)
-
-    return user
+        // Save user in the transaction
+        return await transactionalEntityManager.save(user)
+      }
+    )
   }
 
   /**

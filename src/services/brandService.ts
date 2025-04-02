@@ -4,6 +4,11 @@ import { ILike } from 'typeorm'
 import createError from 'http-errors'
 
 export class BrandService {
+  private brandRepository = AppDataSource.getRepository(Brand)
+
+  constructor() {
+    this.brandRepository = AppDataSource.getRepository(Brand)
+  }
   /**
    * Fetch a single brand by its ID
    */
@@ -57,20 +62,25 @@ export class BrandService {
    * @returns The created brand
    */
   async createBrand(name: string, description?: string): Promise<Brand> {
-    // Check if brand already exists
-    const existingBrand = await AppDataSource.getRepository(Brand).findOne({
-      where: { name: ILike(name) },
-    })
+    return await AppDataSource.transaction(
+      async (transactionalEntityManager) => {
+        // Check if brand already exists
+        const existingBrand = await this.brandRepository.findOne({
+          where: { name: ILike(name) },
+        })
 
-    if (existingBrand) {
-      throw createError(409, `Brand with name "${name}" already exists.`)
-    }
+        if (existingBrand) {
+          throw createError(409, `Brand with name "${name}" already exists.`)
+        }
 
-    // Create new brand
-    const brand = new Brand()
-    brand.name = name
-    if (description) brand.description = description
+        // Create new brand
+        const brand = new Brand()
+        brand.name = name
+        if (description) brand.description = description
 
-    return await AppDataSource.getRepository(Brand).save(brand)
+        // Save the brand in the transaction
+        return await transactionalEntityManager.save(brand)
+      }
+    )
   }
 }
