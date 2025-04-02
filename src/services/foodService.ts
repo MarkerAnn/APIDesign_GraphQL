@@ -184,7 +184,19 @@ export class FoodService {
         )
 
         // Get and return the saved food with relations
-        return await this.getFoodById(savedFood.id)
+        const finalFood = await transactionalEntityManager.findOne(Food, {
+          where: { id: savedFood.id },
+          relations: ['nutritions', 'source', 'brand', 'ingredients'],
+        })
+
+        if (!finalFood) {
+          throw createError(
+            500,
+            `Failed to fetch newly created food with ID ${savedFood.id}`
+          )
+        }
+
+        return finalFood
       }
     )
   }
