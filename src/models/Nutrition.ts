@@ -85,6 +85,23 @@ export class Nutrition {
   valueType!: string
 
   /**
+   * @property {number} food_id - Foreign key referencing the Food entity
+   * @description Database column that stores the ID of the associated food item
+   * This is the actual column name in the database (snake_case)
+   */
+  @Column({ name: 'food_id' })
+  food_id!: number
+
+  /**
+   * @property {number} foodId - Getter for food_id in camelCase
+   * @description Provides access to food_id using JavaScript camelCase convention
+   * Enables consistent access regardless of database naming convention
+   */
+  get foodId(): number {
+    return this.food_id
+  }
+
+  /**
    * @property {Food} food - Associated food item
    * @description Reference to the Food entity that this nutrition data belongs to
    * @relations Many-to-one relationship with the Food entity

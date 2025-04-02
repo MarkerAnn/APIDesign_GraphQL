@@ -2,202 +2,50 @@ import { gql } from 'graphql-tag'
 
 export const queryTypeDefs = gql`
   """
-  Enum representing sorting criteria for food searches.
-  """
-  enum SortBy {
-    NAME
-    NUTRIENT
-  }
-
-  """
-  Enum representing sorting direction.
-  """
-  enum SortDirection {
-    ASC
-    DESC
-  }
-
-  """
-  Input type for filtering foods by nutrient properties.
-  """
-  input NutrientFilter {
-    "The name of the nutrient to filter by (e.g., 'Protein')"
-    nutrient: String!
-
-    "Optional minimum value for filtering"
-    min: Float
-
-    "Optional maximum value for filtering"
-    max: Float
-
-    "Optional category for filtering (e.g., 'macronutrient')"
-    category: String
-  }
-
-  """
-  Input type for user registration.
-  """
-  input RegisterInput {
-    "Desired username for new account"
-    username: String!
-    "Email address"
-    email: String!
-    "Password for the account"
-    password: String!
-  }
-
-  """
-  Input type for required nutrition information when creating a food item.
-  All values should be specified per 100g of the food item.
-  """
-  input NutritionInput {
-    """
-    Amount of carbohydrates in grams per 100g.
-    Must be a non-negative value and should not exceed 100g.
-    """
-    carbohydrates: Float!
-
-    """
-    Amount of protein in grams per 100g.
-    Must be a non-negative value and should not exceed 100g.
-    """
-    protein: Float!
-
-    """
-    Amount of total fat in grams per 100g.
-    Must be a non-negative value and should not exceed 100g.
-    """
-    fat: Float!
-
-    """
-    Energy content in kilocalories (kcal) per 100g.
-    Must be a non-negative value and should be consistent with the macronutrient values
-    (approximately: carbohydrates*4 + protein*4 + fat*9).
-    """
-    kcal: Float!
-  }
-
-  """
-  Input type for updating nutrition information.
-  All values are optional and specified per 100g of the food item.
-  """
-  input UpdateNutritionInput {
-    """
-    Amount of carbohydrates in grams per 100g.
-    Must be a non-negative value and should not exceed 100g.
-    """
-    carbohydrates: Float
-
-    """
-    Amount of protein in grams per 100g.
-    Must be a non-negative value and should not exceed 100g.
-    """
-    protein: Float
-
-    """
-    Amount of total fat in grams per 100g.
-    Must be a non-negative value and should not exceed 100g.
-    """
-    fat: Float
-
-    """
-    Energy content in kilocalories (kcal) per 100g.
-    Must be a non-negative value and should be consistent with the macronutrient values
-    (approximately: carbohydrates*4 + protein*4 + fat*9).
-    """
-    kcal: Float
-  }
-
-  """
-  Input type for user login.
-  """
-  input LoginInput {
-    "Username or email to authenticate with"
-    usernameOrEmail: String!
-    "Password for authentication"
-    password: String!
-  }
-
-  """
-  Input type for creating a new food item with required nutritional information.
-  """
-  input CreateFoodInput {
-    """
-    Name of the food item.
-    Should be descriptive and follow standard naming conventions.
-    """
-    name: String!
-
-    """
-    Optional brand name associated with this food item.
-    The brand must already exist in the system.
-    """
-    brandName: String
-
-    """
-    Required nutritional values per 100g of the food item.
-    These values are used to create the basic nutritional profile.
-    """
-    nutrition: NutritionInput!
-  }
-
-  """
-  Input type for creating a brand.
-  """
-  input CreateBrandInput {
-    "Name of the brand"
-    name: String!
-
-    "Optional description of the brand"
-    description: String
-  }
-
-  """
-  Input type for updating a food item.
-  """
-  input UpdateFoodInput {
-    """
-    Name of the food item (optional for update)
-    """
-    name: String
-
-    """
-    Source ID the food belongs to (optional for update)
-    """
-    sourceId: ID
-
-    """
-    Optional brand ID (optional for update)
-    """
-    brandId: ID
-
-    """
-    Optional nutritional values to update
-    """
-    nutrition: UpdateNutritionInput
-  }
-
-  """
-  The root query type for all available operations.
+  The root query type for retrieving information from the database.
+  All data fetching operations start here.
   """
   type Query {
     """
     Fetch a paginated list of all foods.
+
+    @param limit Maximum number of items to return (default: 10)
+    @param offset Number of items to skip (default: 0)
+    @returns A list of food items
     """
     foods(limit: Int = 10, offset: Int = 0): [Food!]!
 
     """
     Fetch a specific food item by its ID.
+
+    @param id Unique identifier of the food item
+    @returns The requested food item or null if not found
     """
     food(id: ID!): Food
 
     """
     Fetch a paginated list of foods using cursor-based pagination.
+    This approach is more efficient for large datasets.
+
+    @param first Maximum number of items to return (default: 10)
+    @param after Cursor indicating where to start fetching from (optional)
+    @returns A connection object with edges, pagination info, and total count
     """
     foodsConnection(first: Int = 10, after: String): FoodConnection!
 
     """
     Perform an advanced search for foods using name and nutrient filters.
+
+    This query allows complex filtering by name pattern and nutritional content,
+    with sorting options.
+
+    @param name Text to search for in food names (optional)
+    @param nutrients Array of nutrient filters to apply (optional)
+    @param limit Maximum number of items to return (default: 20)
+    @param sortBy Criteria to sort results by (default: NAME)
+    @param sortDirection Order to sort results (default: ASC)
+    @param sortNutrient Specific nutrient to sort by when sortBy is NUTRIENT
+    @returns A list of food items matching the filters
     """
     searchFoodsAdvanced(
       name: String
@@ -210,6 +58,11 @@ export const queryTypeDefs = gql`
 
     """
     Fetch all nutrition information, optionally filtered by category.
+
+    @param category Array of nutrient categories to filter by (optional)
+    @param limit Maximum number of items to return (default: 10)
+    @param offset Number of items to skip (default: 0)
+    @returns A list of nutrition entries
     """
     nutritions(
       category: [String]
@@ -219,71 +72,76 @@ export const queryTypeDefs = gql`
 
     """
     Fetch a specific nutrition entry by its ID.
+
+    @param id Unique identifier of the nutrition entry
+    @returns The requested nutrition entry or null if not found
     """
     nutrition(id: ID!): Nutrition
 
     """
     Fetch all ingredients with pagination.
+
+    @param limit Maximum number of items to return (default: 10)
+    @param offset Number of items to skip (default: 0)
+    @returns A list of ingredient entries
     """
     ingredients(limit: Int = 10, offset: Int = 0): [Ingredient!]!
 
     """
     Fetch a specific ingredient by its ID.
+
+    @param id Unique identifier of the ingredient
+    @returns The requested ingredient or null if not found
     """
     ingredient(id: ID!): Ingredient
 
     """
-    Fetch all sources.
+    Fetch all available data sources.
+
+    @returns A list of all sources in the database
     """
     sources: [Source!]!
 
     """
     Fetch a specific source by its ID.
+
+    @param id Unique identifier of the source
+    @returns The requested source or null if not found
     """
     source(id: ID!): Source
 
     """
     Fetch all brands with pagination.
+
+    @param limit Maximum number of items to return (default: 10)
+    @param offset Number of items to skip (default: 0)
+    @returns A list of brands
     """
     brands(limit: Int = 10, offset: Int = 0): [Brand!]!
 
     """
     Fetch a specific brand by its ID.
+
+    @param id Unique identifier of the brand
+    @returns The requested brand or null if not found
     """
     brand(id: ID!): Brand
 
     """
-    Search for brands by name (for autocomplete)
+    Search for brands by name (useful for autocomplete features).
+
+    @param name Text to search for in brand names
+    @param limit Maximum number of items to return (default: 10)
+    @returns A list of brands matching the search term
     """
     searchBrands(name: String!, limit: Int = 10): [Brand!]!
 
     """
-    Fetch a specific user by its ID.
+    Fetch a specific user by their ID.
+
+    @param id Unique identifier of the user
+    @returns The requested user or null if not found
     """
     getUser(id: ID!): User
   }
-
-  """
-  The root mutation type for all available operations.
-  """
-  type Mutation {
-    "Register a new user"
-    register(input: RegisterInput!): AuthPayload!
-
-    "Login an existing user"
-    login(input: LoginInput!): AuthPayload!
-
-    "Create a new food item (requires authentication)"
-    createFood(input: CreateFoodInput!): Food!
-
-    "Create a new brand (requires authentication)"
-    createBrand(input: CreateBrandInput!): Brand!
-
-    "Update an existing food item (requires authentication)"
-    updateFood(id: ID!, input: UpdateFoodInput!): Food!
-
-    "Delete a food item (requires authentication)"
-    deleteFood(id: ID!): Boolean!
-  }
 `
-// TODO: Gör mellanslag konsekvent här, dela upp input?

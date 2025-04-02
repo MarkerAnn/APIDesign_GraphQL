@@ -47,7 +47,12 @@ export const nutritionQueries = {
   Nutrition: {
     food: async (parent: any, _args: any) => {
       try {
-        if (!parent.foodId) throw createError(400, 'Invalid food ID.')
+        const foodId = parent.food_id || parent.foodId
+
+        if (!foodId) {
+          console.log(`Missing foodId for nutrition ID ${parent.id}`)
+          return null
+        }
 
         // Fetch the food associated with this nutrition
         const food = await AppDataSource.getRepository(Food).findOne({
