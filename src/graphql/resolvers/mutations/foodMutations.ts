@@ -1,5 +1,4 @@
 import { FoodService } from '../../../services/foodService'
-import { BrandService } from '../../../services/brandService'
 import { requireAuth } from '../../../utils/authGuard'
 import { handleError } from '../../../utils/errorHandler'
 import { AuthContext } from '../../../middleware/auth'
@@ -10,7 +9,7 @@ const foodService = new FoodService()
 export const foodMutations = {
   Mutation: {
     /**
-     * Create a new food item
+     * Create a new food item with nutrition data
      * Requires authentication
      */
     createFood: requireAuth(
@@ -50,7 +49,7 @@ export const foodMutations = {
     ),
 
     /**
-     * Update an existing food item
+     * Update an existing food item with optional nutrition data
      * Requires authentication
      */
     updateFood: requireAuth(
@@ -62,12 +61,25 @@ export const foodMutations = {
             name?: string
             sourceId?: number
             brandId?: number
+            nutrition?: {
+              carbohydrates?: number
+              protein?: number
+              fat?: number
+              kcal?: number
+            }
           }
         },
         context: AuthContext
       ) => {
         try {
-          const updatedFood = await foodService.updateFood(args.id, args.input)
+          const { id, input } = args
+          const { nutrition, ...foodData } = input
+
+          const updatedFood = await foodService.updateFood(
+            id,
+            foodData,
+            nutrition
+          )
           return updatedFood
         } catch (error) {
           throw handleError(error)

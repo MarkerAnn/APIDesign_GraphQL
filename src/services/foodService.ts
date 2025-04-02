@@ -190,9 +190,23 @@ export class FoodService {
   }
 
   /**
-   * Update an existing food item
+   * Update an existing food item and its nutritional values
+   *
+   * @param id Food ID to update
+   * @param data Food properties to update
+   * @param nutritionData Optional nutrition values to update
+   * @returns The updated food with relations
    */
-  async updateFood(id: number, data: Partial<Food>) {
+  async updateFood(
+    id: number,
+    data: Partial<Food>,
+    nutritionData?: {
+      carbohydrates?: number
+      protein?: number
+      fat?: number
+      kcal?: number
+    }
+  ) {
     return await AppDataSource.transaction(
       async (transactionalEntityManager) => {
         const food = await this.foodRepository.findOneBy({ id })
@@ -231,8 +245,18 @@ export class FoodService {
           delete data.number
         }
 
+        // Update basic food properties
         Object.assign(food, data)
         await transactionalEntityManager.save(food)
+
+        // Update nutritional values if provided
+        if (nutritionData) {
+          await this.nutritionService.updateBasicNutritions(
+            food.id,
+            nutritionData,
+            transactionalEntityManager
+          )
+        }
 
         // Return the updated food with relationships
         return await this.getFoodById(food.id)
@@ -241,7 +265,7 @@ export class FoodService {
   }
 
   /**
-   * Delete a food item
+   * Delete a food item and its related nutritions
    */
   async deleteFood(id: number) {
     return await AppDataSource.transaction(

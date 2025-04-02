@@ -78,6 +78,37 @@ export const queryTypeDefs = gql`
   }
 
   """
+  Input type for updating nutrition information.
+  All values are optional and specified per 100g of the food item.
+  """
+  input UpdateNutritionInput {
+    """
+    Amount of carbohydrates in grams per 100g.
+    Must be a non-negative value and should not exceed 100g.
+    """
+    carbohydrates: Float
+
+    """
+    Amount of protein in grams per 100g.
+    Must be a non-negative value and should not exceed 100g.
+    """
+    protein: Float
+
+    """
+    Amount of total fat in grams per 100g.
+    Must be a non-negative value and should not exceed 100g.
+    """
+    fat: Float
+
+    """
+    Energy content in kilocalories (kcal) per 100g.
+    Must be a non-negative value and should be consistent with the macronutrient values
+    (approximately: carbohydrates*4 + protein*4 + fat*9).
+    """
+    kcal: Float
+  }
+
+  """
   Input type for user login.
   """
   input LoginInput {
@@ -125,14 +156,25 @@ export const queryTypeDefs = gql`
   Input type for updating a food item.
   """
   input UpdateFoodInput {
-    "Name of the food item (optional for update)"
+    """
+    Name of the food item (optional for update)
+    """
     name: String
 
-    "Source ID the food belongs to (optional for update)"
+    """
+    Source ID the food belongs to (optional for update)
+    """
     sourceId: ID
 
-    "Optional brand ID (optional for update)"
+    """
+    Optional brand ID (optional for update)
+    """
     brandId: ID
+
+    """
+    Optional nutritional values to update
+    """
+    nutrition: UpdateNutritionInput
   }
 
   """
