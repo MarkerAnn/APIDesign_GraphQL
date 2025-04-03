@@ -1,6 +1,7 @@
 import { ApolloServer } from '@apollo/server'
 import { expressMiddleware } from '@apollo/server/express4'
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 import express from 'express'
 import http from 'http'
 import cors from 'cors'
@@ -25,14 +26,27 @@ async function startServer() {
     const server = new ApolloServer({
       typeDefs,
       resolvers,
-      plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+      introspection: true, // Allow introspection in production
+      plugins: [
+        ApolloServerPluginDrainHttpServer({ httpServer }),
+        ApolloServerPluginLandingPageLocalDefault({ embed: true }), // Activate the playground in production
+      ],
     })
 
     await server.start()
 
     app.use(
       '/graphql',
-      cors<cors.CorsRequest>(),
+      cors<cors.CorsRequest>({
+        origin: '*',
+        credentials: true,
+        methods: ['GET', 'POST', 'OPTIONS'],
+        allowedHeaders: [
+          'Content-Type',
+          'apollo-require-preflight',
+          'x-apollo-operation-name',
+        ],
+      }),
       bodyParser.json(),
       expressMiddleware(server, {
         context: async ({ req }) => {
@@ -49,8 +63,10 @@ async function startServer() {
     )
 
     const PORT = process.env.PORT || 4000
+    const HOST = process.env.HOST || '0.0.0.0'
+
     httpServer.listen(PORT, () =>
-      console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`)
+      console.log(`🚀 Server ready at http://${HOST}:${PORT}/graphql`)
     )
   } catch (error) {
     console.error('❌ Failed to start server:', error)

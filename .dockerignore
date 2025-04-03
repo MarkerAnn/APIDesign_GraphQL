@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+.env
+dist
+structure.md
+*.txt
+TODO.md
+debug-_groups.json
+folder_structure.md
+how.md
+TODO.md
+.git
+.gitignore
+querys.sql
+

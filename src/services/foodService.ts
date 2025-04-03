@@ -221,6 +221,7 @@ export class FoodService {
   ) {
     return await AppDataSource.transaction(
       async (transactionalEntityManager) => {
+        // Find the food entity using the repository
         const food = await this.foodRepository.findOneBy({ id })
         if (!food) throw createError(404, `Food with ID ${id} not found.`)
 
@@ -270,8 +271,20 @@ export class FoodService {
           )
         }
 
-        // Return the updated food with relationships
-        return await this.getFoodById(food.id)
+        // Get the updated food with relationships INSIDE the transaction
+        const updatedFood = await transactionalEntityManager.findOne(Food, {
+          where: { id: food.id },
+          relations: ['nutritions', 'source', 'brand', 'ingredients'],
+        })
+
+        if (!updatedFood) {
+          throw createError(
+            500,
+            `Failed to fetch updated food with ID ${food.id}`
+          )
+        }
+
+        return updatedFood
       }
     )
   }
