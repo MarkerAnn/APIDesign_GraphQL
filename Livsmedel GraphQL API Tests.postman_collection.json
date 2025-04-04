@@ -1,1678 +1,1750 @@
 {
-  "info": {
-    "_postman_id": "2eba2206-f578-4bcc-8593-3082eec0234f",
-    "name": "Livsmedel GraphQL API Tests",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "33182125"
-  },
-  "item": [
-    {
-      "name": "Authentication",
-      "item": [
-        {
-          "name": "Register User",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "if (jsonData && jsonData.data && jsonData.data.register && jsonData.data.register.token) {",
-                  "    pm.environment.set(\"token\", jsonData.data.register.token);",
-                  "    console.log(\"Token saved to environment\");",
-                  "}",
-                  "",
-                  "",
-                  "const testUsername = pm.environment.get(\"testUsername\");",
-                  "",
-                  "",
-                  "pm.test(\"Register successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.data.register.token).to.exist;",
-                  "    pm.expect(jsonData.data.register.user.username).to.eql(testUsername);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "const timestamp = new Date().getTime();",
-                  "const randomUsername = `testuser_${timestamp}`;",
-                  "const randomEmail = `testuser_${timestamp}@example.com`;",
-                  "",
-                  "pm.environment.set(\"testUsername\", randomUsername);",
-                  "pm.environment.set(\"testEmail\", randomEmail);"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Register($input: RegisterInput!) { register(input: $input) { token user { id username email } } }\",\n  \"variables\": {\n    \"input\": {\n      \"username\": \"{{testUsername}}\",\n      \"email\": \"{{testEmail}}\",\n      \"password\": \"Password123!\"\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Register user - user already exist",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "",
-                  "pm.test(\"Registration should fail with duplicate email\", function() {",
-                  "    const jsonResponse = pm.response.json();",
-                  "    pm.expect(jsonResponse.errors).to.exist;",
-                  "    ",
-                  "    if (jsonResponse.errors && jsonResponse.errors.length > 0) {",
-                  "        const firstError = jsonResponse.errors[0];",
-                  "        pm.expect(firstError.extensions.status).to.equal(409);",
-                  "        pm.expect(firstError.message).to.include(\"already exists\");",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "const testUsername = pm.environment.get(\"testUsername\");",
-                  "const testEmail = pm.environment.get(\"testEmail\");"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Register($input: RegisterInput!) { register(input: $input) { token user { id username email } } }\",\n  \"variables\": {\n    \"input\": {\n      \"username\": \"{{testUsername}}\",\n      \"email\": \"{{testEmail}}\",\n      \"password\": \"Password123!\"\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Login User",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "if (jsonData && jsonData.data && jsonData.data.login && jsonData.data.login.token) {",
-                  "    pm.environment.set(\"token\", jsonData.data.login.token);",
-                  "    console.log(\"Token saved to environment\");",
-                  "}",
-                  "",
-                  "pm.test(\"Login successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.data.login.token).to.exist;",
-                  "    pm.expect(jsonData.data.login.user.username).to.eql(\"testuser4\");",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id username email } } }\",\n  \"variables\": {\n    \"input\": {\n      \"usernameOrEmail\": \"testuser4@example.com\",\n      \"password\": \"Password123!\"\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Login User - Invalid Passord",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Login should fail with invalid password\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.exist;",
-                  "    const hasError = jsonData.errors.some(error => ",
-                  "        error.message.toLowerCase().includes(\"invalid credentials\")",
-                  "    );",
-                  "    pm.expect(hasError).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id username email } } }\",\n  \"variables\": {\n    \"input\": {\n      \"usernameOrEmail\": \"testuser@example.com\",\n      \"password\": \"WrongPassword123\"\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Queries",
-      "item": [
-        {
-          "name": "Query Foods",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Foods query successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.foods).to.be.an('array');",
-                  "});",
-                  "",
-                  "// Check if data in the respons",
-                  "pm.test(\"Foods have data\", function() {",
-                  "    pm.expect(jsonData.data.foods.length).to.be.greaterThan(0);",
-                  "    pm.expect(jsonData.data.foods[0].name).to.be.a('string');",
-                  "});",
-                  "",
-                  "// ave first foodID for later use",
-                  "if (jsonData.data.foods && jsonData.data.foods.length > 0) {",
-                  "    pm.environment.set(\"foodId\", jsonData.data.foods[0].id);",
-                  "    console.log(\"Food ID saved:\", jsonData.data.foods[0].id);",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query GetFoods($limit: Int, $offset: Int) { foods(limit: $limit, offset: $offset) { id name nutritions { name value unit category } source { name } } }\",\n  \"variables\": {\n    \"limit\": 5,\n    \"offset\": 0\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Query Nutritions",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Nutrition query successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.nutritions).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test(\"Nutritions are of correct category\", function() {",
-                  "    // If no result, dont run the test",
-                  "    if (jsonData.data.nutritions.length === 0) {",
-                  "        return;",
-                  "    }",
-                  "    ",
-                  "    // Check if all of the nutritions is \"macronutritrient\"",
-                  "    const allMacronutrients = jsonData.data.nutritions.every(n => ",
-                  "        n.category === 'macronutrient'",
-                  "    );",
-                  "    ",
-                  "    pm.expect(allMacronutrients).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query GetNutritions($category: [String], $limit: Int, $offset: Int) { nutritions(category: $category, limit: $limit, offset: $offset) { id name value unit category food { name } } }\",\n  \"variables\": {\n    \"category\": [\"macronutrient\"],\n    \"limit\": 10,\n    \"offset\": 0\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Advanced Food search",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Advanced search successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.searchFoodsAdvanced).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test(\"Search results match criteria\", function() {",
-                  "    // Dont't run the test if respons is empty",
-                  "    if (jsonData.data.searchFoodsAdvanced.length === 0) {",
-                  "        console.log(\"No search results found\");",
-                  "        return;",
-                  "    }",
-                  "    ",
-                  "    // Check if the name contains the \"input-name\"",
-                  "    const nameMatches = jsonData.data.searchFoodsAdvanced.some(food => ",
-                  "        food.name.toLowerCase().includes(\"mjölk\")",
-                  "    );",
-                  "    ",
-                  "    pm.expect(nameMatches).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query SearchFoods($name: String, $nutrients: [NutrientFilter!], $limit: Int) { searchFoodsAdvanced(name: $name, nutrients: $nutrients, limit: $limit) { id name nutritions { name value unit category } } }\",\n  \"variables\": {\n    \"name\": \"mjölk\",\n    \"nutrients\": [\n      {\n        \"nutrient\": \"Protein\",\n        \"min\": 1\n      }\n    ],\n    \"limit\": 5\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Single Food",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Get single food successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.food).to.exist;",
-                  "    pm.expect(jsonData.data.food.id).to.equal(\"2533\");",
-                  "    pm.expect(jsonData.data.food.name).to.be.a('string');",
-                  "});",
-                  "",
-                  "pm.test(\"Food has nutritional information\", function() {",
-                  "    pm.expect(jsonData.data.food.nutritions).to.be.an('array');",
-                  "    ",
-                  "    // If nutrition, save the first for later use",
-                  "    if (jsonData.data.food.nutritions.length > 0) {",
-                  "        pm.environment.set(\"nutritionId\", jsonData.data.food.nutritions[0].id);",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query GetFood($id: ID!) { food(id: $id) { id name nutritions { id name value unit category } source { name type } brand { name } ingredients { ingredientName } } }\",\n  \"variables\": {\n    \"id\": \"2533\"\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Food - Invalid ID",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Get food with invalid ID should return null or error\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    ",
-                  "    // Food is null or there is a error",
-                  "    const notFoundResponse = !jsonData.data.food || ",
-                  "                             (jsonData.errors && ",
-                  "                              jsonData.errors.some(e => e.message.includes(\"not found\")));",
-                  "                              ",
-                  "    pm.expect(notFoundResponse).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query GetFood($id: ID!) { food(id: $id) { id name } }\",\n  \"variables\": {\n    \"id\": \"99999999\"\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Cursor Pagination - Test",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Cursor pagination first page successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.foodsConnection).to.exist;",
-                  "    pm.expect(jsonData.data.foodsConnection.edges).to.be.an('array');",
-                  "    pm.expect(jsonData.data.foodsConnection.edges.length).to.be.at.most(3);",
-                  "});",
-                  "",
-                  "// Save cursor for next page id hasNextPage is true",
-                  "if (jsonData.data.foodsConnection.pageInfo.hasNextPage) {",
-                  "    pm.environment.set(\"nextPageCursor\", jsonData.data.foodsConnection.pageInfo.endCursor);",
-                  "    ",
-                  "    // Create a new request for next page",
-                  "    const nextRequest = {",
-                  "        url: pm.environment.get('baseUrl') + '/graphql',",
-                  "        method: 'POST',",
-                  "        header: {",
-                  "            'Content-Type': 'application/json'",
-                  "        },",
-                  "        body: {",
-                  "            mode: 'raw',",
-                  "            raw: JSON.stringify({",
-                  "                query: `query FoodsPagination($first: Int, $after: String) { ",
-                  "                    foodsConnection(first: $first, after: $after) { ",
-                  "                        edges { ",
-                  "                            node { id name } ",
-                  "                            cursor ",
-                  "                        } ",
-                  "                        pageInfo { ",
-                  "                            hasNextPage ",
-                  "                            endCursor ",
-                  "                        } ",
-                  "                        totalCount ",
-                  "                    } ",
-                  "                }`,",
-                  "                variables: {",
-                  "                    first: 3,",
-                  "                    after: jsonData.data.foodsConnection.pageInfo.endCursor",
-                  "                }",
-                  "            })",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    // Run next page request",
-                  "    pm.sendRequest(nextRequest, function (err, response) {",
-                  "        const nextPageData = response.json();",
-                  "        ",
-                  "        pm.test(\"Cursor pagination next page successful\", function() {",
-                  "            pm.expect(err).to.be.null;",
-                  "            pm.expect(nextPageData.data.foodsConnection).to.exist;",
-                  "            pm.expect(nextPageData.data.foodsConnection.edges).to.be.an('array');",
-                  "            ",
-                  "            // Check for duplicate result",
-                  "            if (jsonData.data.foodsConnection.edges.length > 0 && ",
-                  "                nextPageData.data.foodsConnection.edges.length > 0) {",
-                  "                const firstPageIds = jsonData.data.foodsConnection.edges.map(e => e.node.id);",
-                  "                const secondPageIds = nextPageData.data.foodsConnection.edges.map(e => e.node.id);",
-                  "                ",
-                  "                // Check - no ID is the same from last page",
-                  "                const isUnique = secondPageIds.every(id => !firstPageIds.includes(id));",
-                  "                pm.expect(isUnique).to.be.true;",
-                  "            }",
-                  "        });",
-                  "    });",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query FoodsPagination($first: Int, $after: String) { foodsConnection(first: $first, after: $after) { edges { node { id name } cursor } pageInfo { hasNextPage endCursor } totalCount } }\",\n  \"variables\": {\n    \"first\": 3\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Sources",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Sources query successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.sources).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test(\"Verify Livsmedelsverket source exists\", function() {",
-                  "    const livsmedelsverketExists = jsonData.data.sources.some(source => ",
-                  "        source.name.toLowerCase().includes(\"livsmedelsverket\") ||",
-                  "        source.type === \"official\"",
-                  "    );",
-                  "    pm.expect(livsmedelsverketExists).to.be.true;",
-                  "    ",
-                  "    // Save sourceID for Livsmedelsverket if exist",
-                  "    const livsmedelsverketSource = jsonData.data.sources.find(source => ",
-                  "        source.name.toLowerCase().includes(\"livsmedelsverket\")",
-                  "    );",
-                  "    if (livsmedelsverketSource) {",
-                  "        pm.environment.set(\"livsmedelSourceId\", livsmedelsverketSource.id);",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query GetSources { sources { id name type description } }\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Search Brands",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Brand search successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.searchBrands).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test(\"Search results contain search term\", function() {",
-                  "    // If results, check if the name contains the seach-term",
-                  "    if (jsonData.data.searchBrands.length > 0) {",
-                  "        const allMatch = jsonData.data.searchBrands.every(brand => ",
-                  "            brand.name.toLowerCase().includes(\"test\")",
-                  "        );",
-                  "        pm.expect(allMatch).to.be.true;",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query SearchBrands($name: String!, $limit: Int) { searchBrands(name: $name, limit: $limit) { id name description } }\",\n  \"variables\": {\n    \"name\": \"Test\",\n    \"limit\": 5\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Filter Nutritions by Category",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Vitamin kategori-filtrering fungerar\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.nutritions).to.be.an('array');",
-                  "    ",
-                  "    // If result, see if all data is in category vitamin",
-                  "    if (jsonData.data.nutritions.length > 0) {",
-                  "        const allVitamins = jsonData.data.nutritions.every(n => ",
-                  "            n.category === 'vitamin'",
-                  "        );",
-                  "        pm.expect(allVitamins).to.be.true;",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query GetNutritionsByCategory($category: [String], $limit: Int) { nutritions(category: $category, limit: $limit) { id name value unit category food { id name } } }\",\n  \"variables\": {\n    \"category\": [\"vitamin\"],\n    \"limit\": 5\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Complex Food Search",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Komplex sökning fungerar\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.searchFoodsAdvanced).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test(\"Verifiera sökresultat om de finns\", function() {",
-                  "    // Skit this if no results",
-                  "    if (jsonData.data.searchFoodsAdvanced.length === 0) {",
-                  "        console.log(\"Inga resultat hittades för komplexsökningen\");",
-                  "        return;",
-                  "    }",
-                  "    ",
-                  "    // Check if all data in respons contains the name \"mjölk\"",
-                  "    const nameMatches = jsonData.data.searchFoodsAdvanced.every(food => ",
-                  "        food.name.toLowerCase().includes(\"mjölk\")",
-                  "    );",
-                  "    ",
-                  "    pm.expect(nameMatches).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query ComplexSearch($name: String, $nutrients: [NutrientFilter!], $limit: Int) { searchFoodsAdvanced(name: $name, nutrients: $nutrients, limit: $limit) { id name nutritions { name value unit category } } }\",\n  \"variables\": {\n    \"name\": \"mjölk\",\n    \"nutrients\": [\n      {\n        \"nutrient\": \"Protein\",\n        \"min\": 3,\n        \"max\": 10\n      },\n      {\n        \"nutrient\": \"Fett\",\n        \"min\": 0.5\n      }\n    ],\n    \"limit\": 5\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Foods Connection Total Count",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"FoodsConnection totalCount fungerar\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.foodsConnection).to.exist;",
-                  "    pm.expect(jsonData.data.foodsConnection.totalCount).to.be.a('number');",
-                  "});",
-                  "",
-                  "pm.test(\"Total Count överensstämmer med databasinnehåll\", function() {",
-                  "    // Expect at least 10 foods in database",
-                  "    pm.expect(jsonData.data.foodsConnection.totalCount).to.be.at.least(10);",
-                  "    ",
-                  "    // Save totalCount",
-                  "    pm.environment.set(\"totalFoodCount\", jsonData.data.foodsConnection.totalCount);",
-                  "    ",
-                  "    // Check hasNextPAge - Should be true if there is more than 1 post",
-                  "    if (jsonData.data.foodsConnection.totalCount > 1) {",
-                  "        pm.expect(jsonData.data.foodsConnection.pageInfo.hasNextPage).to.be.true;",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query { foodsConnection(first: 1) { edges { node { id } } pageInfo { hasNextPage endCursor } totalCount } }\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Multiple Nutrition Categories",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Filtrering på flera näringsämnesklasser fungerar\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.nutritions).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test(\"Kontrollerar variationen av kategorier\", function() {",
-                  "    // Skip if not enough results",
-                  "    if (jsonData.data.nutritions.length < 3) {",
-                  "        console.log(\"För få resultat för att verifiera variation av kategorier\");",
-                  "        return;",
-                  "    }",
-                  "    ",
-                  "    // Collect category from result",
-                  "    const categories = new Set();",
-                  "    jsonData.data.nutritions.forEach(n => {",
-                  "        if (n.category) categories.add(n.category);",
-                  "    });",
-                  "    ",
-                  "    // Expect at least 2 categories ",
-                  "    pm.expect(categories.size).to.be.at.least(2);",
-                  "    console.log(\"Hittade följande kategorier:\", Array.from(categories));",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query MultiCategories($categories: [String], $limit: Int) { nutritions(category: $categories, limit: $limit) { id name value unit category } }\",\n  \"variables\": {\n    \"categories\": [\"macronutrient\", \"vitamin\", \"mineral\"],\n    \"limit\": 15\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Mutations",
-      "item": [
-        {
-          "name": "Create Brand",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Generate a unique bran name",
-                  "const uniqueId = pm.variables.replaceIn('{{$timestamp}}');",
-                  "pm.variables.set('uniqueBrandName', `Testmärke ${uniqueId}`);"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Brand creation successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.createBrand).to.exist;",
-                  "    pm.expect(jsonData.data.createBrand.name).to.equal(pm.variables.get('uniqueBrandName'));",
-                  "});",
-                  "",
-                  "// Save BrandID",
-                  "if (jsonData.data && jsonData.data.createBrand) {",
-                  "    pm.environment.set(\"brandId\", jsonData.data.createBrand.id);",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation CreateBrand($input: CreateBrandInput!) { createBrand(input: $input) { id name description } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"{{uniqueBrandName}}\",\n      \"description\": \"Ett testmärke skapat via Postman\"\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Food",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "const uniqueId = pm.variables.replaceIn('{{$timestamp}}');",
-                  "pm.variables.set('uniqueFoodName', `Testmat ${uniqueId}`);",
-                  "",
-                  "// Update name in request body",
-                  "const requestBody = JSON.parse(pm.request.body.raw);",
-                  "requestBody.variables.input.name = pm.variables.get('uniqueFoodName');",
-                  "pm.request.body.raw = JSON.stringify(requestBody, null, 2);"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Food creation successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.createFood).to.exist;",
-                  "    pm.expect(jsonData.data.createFood.name).to.eql(pm.variables.get('uniqueFoodName'));",
-                  "});",
-                  "",
-                  "// Save the new FoodID",
-                  "if (jsonData.data && jsonData.data.createFood) {",
-                  "    pm.environment.set(\"newFoodId\", jsonData.data.createFood.id);",
-                  "    console.log(\"New Food ID saved:\", jsonData.data.createFood.id);",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation CreateFood($input: CreateFoodInput!) { createFood(input: $input) { id name nutritions { name value unit } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Testmåltid\",\n      \"nutrition\": {\n        \"carbohydrates\": 25.5,\n        \"protein\": 15.2,\n        \"fat\": 8.7,\n        \"kcal\": 240\n      }\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Food",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Food update successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.updateFood).to.exist;",
-                  "    pm.expect(jsonData.data.updateFood.name).to.eql(\"Uppdaterad Testmat\");",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation UpdateFood($id: ID!, $input: UpdateFoodInput!) { updateFood(id: $id, input: $input) { id name nutritions { name value unit } } }\",\n  \"variables\": {\n    \"id\": \"{{newFoodId}}\",\n    \"input\": {\n      \"name\": \"Uppdaterad Testmat\",\n      \"nutrition\": {\n        \"carbohydrates\": 30,\n        \"protein\": 18,\n        \"fat\": 10,\n        \"kcal\": 283\n      }\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Food",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Food deletion successful\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.be.undefined;",
-                  "    pm.expect(jsonData.data.deleteFood).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation DeleteFood($id: ID!) { deleteFood(id: $id) }\",\n  \"variables\": {\n    \"id\": \"{{newFoodId}}\"\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Food - No Authentication",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Create food should fail without authentication\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.exist;",
-                  "    const hasError = jsonData.errors.some(error => ",
-                  "        error.message.toLowerCase().includes(\"authentication\") || ",
-                  "        error.message.toLowerCase().includes(\"unauthorized\")",
-                  "    );",
-                  "    pm.expect(hasError).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation CreateFood($input: CreateFoodInput!) { createFood(input: $input) { id name nutritions { name value unit } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Testmåltid utan autentisering\",\n      \"nutrition\": {\n        \"carbohydrates\": 25.5,\n        \"protein\": 15.2,\n        \"fat\": 8.7,\n        \"kcal\": 240\n      }\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Duplicate Brand",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [""],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Brand creation should fail with duplicate name\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.exist;",
-                  "    const hasError = jsonData.errors.some(error => ",
-                  "        error.message.toLowerCase().includes(\"already exists\")",
-                  "    );",
-                  "    pm.expect(hasError).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation CreateBrand($input: CreateBrandInput!) { createBrand(input: $input) { id name description } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"{{uniqueBrandName}}\",\n      \"description\": \"Duplicerat varumärke\"\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Food - Invalid nutritions",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"Food creation should fail with invalid nutrition values\", function() {",
-                  "    pm.response.to.have.status(200);",
-                  "    pm.expect(jsonData.errors).to.exist;",
-                  "    ",
-                  "    // Check if the error is related to the nutrition validation",
-                  "    // Either to high value or value exceeded 100g",
-                  "    const hasNutritionError = jsonData.errors.some(error => ",
-                  "        error.message.toLowerCase().includes(\"exceed\") || ",
-                  "        error.message.toLowerCase().includes(\"macronutrient\") ||",
-                  "        error.message.toLowerCase().includes(\"value\")",
-                  "    );",
-                  "    ",
-                  "    pm.expect(hasNutritionError).to.be.true;",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation CreateFood($input: CreateFoodInput!) { createFood(input: $input) { id name nutritions { name value unit } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Ogiltig Testmat\",\n      \"nutrition\": {\n        \"carbohydrates\": 80.0,\n        \"protein\": 50.0,\n        \"fat\": 30.0,\n        \"kcal\": 240\n      }\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Sequence tests",
-      "item": [
-        {
-          "name": "CRUD Sequence Test",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Genrerate unique data for this test",
-                  "const uniqueId = pm.variables.replaceIn('{{$timestamp}}');",
-                  "pm.variables.set('uniqueFoodName', `Sekvenstest Mat ${uniqueId}`);",
-                  "pm.variables.set('updatedFoodName', `Uppdaterad Sekvenstest Mat ${uniqueId}`);",
-                  "",
-                  "// Get token from the environment if exist",
-                  "const token = pm.environment.get('token');",
-                  "if (!token) {",
-                  "    console.log('Varning: Ingen token hittad i miljön.');",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// Functions to run the sequence",
-                  "async function runSequence() {",
-                  "    // Step 1: Log in and get token",
-                  "    if (!pm.environment.get('token')) {",
-                  "        await loginUser();",
-                  "    }",
-                  "    ",
-                  "    // Step2: Create food",
-                  "    const newFoodId = await createFood();",
-                  "    ",
-                  "    // Step 3: Get food and verify it exists",
-                  "    await getFood(newFoodId);",
-                  "    ",
-                  "    // Step 4: Update the food",
-                  "    await updateFood(newFoodId);",
-                  "    ",
-                  "    // Step 5: Delete the food",
-                  "    await deleteFood(newFoodId);",
-                  "    ",
-                  "    // Step 6: Verify it is deleted",
-                  "    await verifyDeleted(newFoodId);",
-                  "}",
-                  "",
-                  "// Helpfunctions for every step",
-                  "async function loginUser() {",
-                  "    const loginQuery = {",
-                  "        query: `mutation Login($input: LoginInput!) { ",
-                  "            login(input: $input) { ",
-                  "                token ",
-                  "                user { ",
-                  "                    id ",
-                  "                    username ",
-                  "                } ",
-                  "            } ",
-                  "        }`,",
-                  "        variables: {",
-                  "            input: {",
-                  "                usernameOrEmail: \"testuser@example.com\",",
-                  "                password: \"Password123!\"",
-                  "            }",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    const loginResponse = await sendRequest(loginQuery);",
-                  "    ",
-                  "    pm.test(\"Login successful\", function() {",
-                  "        pm.expect(loginResponse.data.login.token).to.exist;",
-                  "        pm.environment.set(\"token\", loginResponse.data.login.token);",
-                  "    });",
-                  "    ",
-                  "    return loginResponse.data.login.token;",
-                  "}",
-                  "",
-                  "async function createFood() {",
-                  "    const createQuery = {",
-                  "        query: `mutation CreateFood($input: CreateFoodInput!) { ",
-                  "            createFood(input: $input) { ",
-                  "                id ",
-                  "                name ",
-                  "                nutritions { ",
-                  "                    name ",
-                  "                    value ",
-                  "                    unit ",
-                  "                } ",
-                  "            } ",
-                  "        }`,",
-                  "        variables: {",
-                  "            input: {",
-                  "                name: pm.variables.get('uniqueFoodName'),",
-                  "                nutrition: {",
-                  "                    carbohydrates: 25.5,",
-                  "                    protein: 15.2,",
-                  "                    fat: 8.7,",
-                  "                    kcal: 240",
-                  "                }",
-                  "            }",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    const createResponse = await sendRequest(createQuery, true);",
-                  "    ",
-                  "    pm.test(\"Create food successful\", function() {",
-                  "        pm.expect(createResponse.data.createFood).to.exist;",
-                  "        pm.expect(createResponse.data.createFood.name).to.eql(pm.variables.get('uniqueFoodName'));",
-                  "    });",
-                  "    ",
-                  "    return createResponse.data.createFood.id;",
-                  "}",
-                  "",
-                  "async function getFood(id) {",
-                  "    const getQuery = {",
-                  "        query: `query GetFood($id: ID!) { ",
-                  "            food(id: $id) { ",
-                  "                id ",
-                  "                name ",
-                  "                nutritions { ",
-                  "                    name ",
-                  "                    value ",
-                  "                } ",
-                  "            } ",
-                  "        }`,",
-                  "        variables: {",
-                  "            id: id",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    const getResponse = await sendRequest(getQuery);",
-                  "    ",
-                  "    pm.test(\"Get food successful\", function() {",
-                  "        pm.expect(getResponse.data.food).to.exist;",
-                  "        pm.expect(getResponse.data.food.id).to.eql(id.toString());",
-                  "    });",
-                  "    ",
-                  "    return getResponse.data.food;",
-                  "}",
-                  "",
-                  "async function updateFood(id) {",
-                  "    const updateQuery = {",
-                  "        query: `mutation UpdateFood($id: ID!, $input: UpdateFoodInput!) { ",
-                  "            updateFood(id: $id, input: $input) { ",
-                  "                id ",
-                  "                name ",
-                  "                nutritions { ",
-                  "                    name ",
-                  "                    value ",
-                  "                } ",
-                  "            } ",
-                  "        }`,",
-                  "        variables: {",
-                  "            id: id,",
-                  "            input: {",
-                  "                name: pm.variables.get('updatedFoodName'),",
-                  "                nutrition: {",
-                  "                    carbohydrates: 30,",
-                  "                    protein: 18,",
-                  "                    fat: 10,",
-                  "                    kcal: 282",
-                  "                }",
-                  "            }",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    const updateResponse = await sendRequest(updateQuery, true);",
-                  "    ",
-                  "    pm.test(\"Update food successful\", function() {",
-                  "        pm.expect(updateResponse.data.updateFood).to.exist;",
-                  "        pm.expect(updateResponse.data.updateFood.name).to.eql(pm.variables.get('updatedFoodName'));",
-                  "    });",
-                  "    ",
-                  "    return updateResponse.data.updateFood;",
-                  "}",
-                  "",
-                  "async function deleteFood(id) {",
-                  "    const deleteQuery = {",
-                  "        query: `mutation DeleteFood($id: ID!) { ",
-                  "            deleteFood(id: $id) ",
-                  "        }`,",
-                  "        variables: {",
-                  "            id: id",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    const deleteResponse = await sendRequest(deleteQuery, true);",
-                  "    ",
-                  "    pm.test(\"Delete food successful\", function() {",
-                  "        pm.expect(deleteResponse.data.deleteFood).to.be.true;",
-                  "    });",
-                  "    ",
-                  "    return deleteResponse.data.deleteFood;",
-                  "}",
-                  "",
-                  "async function verifyDeleted(id) {",
-                  "    const getQuery = {",
-                  "        query: `query GetFood($id: ID!) { ",
-                  "            food(id: $id) { ",
-                  "                id ",
-                  "                name ",
-                  "            } ",
-                  "        }`,",
-                  "        variables: {",
-                  "            id: id",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    const getResponse = await sendRequest(getQuery);",
-                  "    ",
-                  "    pm.test(\"Food should be deleted\", function() {",
-                  "        // Null or GraphQL error fot data that wont be found",
-                  "        const isDeleted = !getResponse.data.food || ",
-                  "                        getResponse.errors && ",
-                  "                        getResponse.errors.some(e => e.message.includes(\"not found\"));",
-                  "        ",
-                  "        pm.expect(isDeleted).to.be.true;",
-                  "    });",
-                  "}",
-                  "",
-                  "// Helpfunction to send GraphQL request",
-                  "async function sendRequest(requestBody, requiresAuth = false) {",
-                  "    const url = pm.environment.get('baseUrl') + '/graphql';",
-                  "    ",
-                  "    const headers = {",
-                  "        'Content-Type': 'application/json'",
-                  "    };",
-                  "    ",
-                  "    if (requiresAuth) {",
-                  "        headers['Authorization'] = 'Bearer ' + pm.environment.get('token');",
-                  "    }",
-                  "    ",
-                  "    const options = {",
-                  "        method: 'POST',",
-                  "        url: url,",
-                  "        header: headers,",
-                  "        body: {",
-                  "            mode: 'raw',",
-                  "            raw: JSON.stringify(requestBody)",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    return new Promise((resolve, reject) => {",
-                  "        pm.sendRequest(options, (err, response) => {",
-                  "            if (err) {",
-                  "                reject(err);",
-                  "            } else {",
-                  "                resolve(response.json());",
-                  "            }",
-                  "        });",
-                  "    });",
-                  "}",
-                  "",
-                  "// Run the sequence test",
-                  "runSequence().catch(e => {",
-                  "    console.error(\"Error running sequence:\", e);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id username } } }\",\n  \"variables\": {\n    \"input\": {\n      \"usernameOrEmail\": \"testuser@example.com\",\n      \"password\": \"Password123!\"\n    }\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Error Handeling",
-      "item": [
-        {
-          "name": "GraphQL syntax error",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const jsonData = pm.response.json();",
-                  "",
-                  "pm.test(\"GraphQL syntax error hanteras korrekt\", function() {",
-                  "    pm.response.to.have.status(400);",
-                  "    // error field or error ibject",
-                  "    const hasErrors = jsonData.errors || jsonData.error;",
-                  "    pm.expect(hasErrors).to.exist;",
-                  "});",
-                  "",
-                  "pm.test(\"Felmeddelandet är informativt\", function() {",
-                  "    // Här kontrollerar vi att felmeddelandet innehåller nyckelord som indikerar syntaxfel",
-                  "    // Check if error message contains keyword indicates syntaxerror",
-                  "    const errorMessage = jsonData.errors ? ",
-                  "                         jsonData.errors[0].message : ",
-                  "                         (jsonData.error ? jsonData.error.message : \"\");",
-                  "    ",
-                  "    // Common syntaxerror",
-                  "    const hasSyntaxTerms = errorMessage.toLowerCase().includes(\"syntax\") || ",
-                  "                          errorMessage.toLowerCase().includes(\"parse\") ||",
-                  "                          errorMessage.toLowerCase().includes(\"unexpected\");",
-                  "                          ",
-                  "    pm.expect(hasSyntaxTerms).to.be.true;",
-                  "    console.log(\"Felmeddelande:\", errorMessage);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query { foods(limit: }\",\n  \"variables\": {}\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/graphql",
-              "host": ["{{baseUrl}}"],
-              "path": ["graphql"]
-            }
-          },
-          "response": []
-        }
-      ]
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "exec": [""]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "exec": [""]
-      }
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "https://angelicamarker.online",
-      "type": "default"
-    },
-    {
-      "key": "token",
-      "value": "",
-      "type": "string"
-    }
-  ]
+	"info": {
+		"_postman_id": "2eba2206-f578-4bcc-8593-3082eec0234f",
+		"name": "Livsmedel GraphQL API Tests",
+		"description": "This collection contains comprehensive automated tests for the Livsmedel (Food) GraphQL API. The tests systematically validate authentication, data retrieval, data modification, and error handling across all API endpoints to ensure both functional correctness and adherence to GraphQL best practices.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33182125"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"if (jsonData && jsonData.data && jsonData.data.register && jsonData.data.register.token) {",
+									"    pm.environment.set(\"token\", jsonData.data.register.token);",
+									"    console.log(\"Token saved to environment\");",
+									"}",
+									"",
+									"",
+									"const testUsername = pm.environment.get(\"testUsername\");",
+									"",
+									"",
+									"pm.test(\"Register successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.data.register.token).to.exist;",
+									"    pm.expect(jsonData.data.register.user.username).to.eql(testUsername);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timestamp = new Date().getTime();",
+									"const randomUsername = `testuser_${timestamp}`;",
+									"const randomEmail = `testuser_${timestamp}@example.com`;",
+									"",
+									"pm.environment.set(\"testUsername\", randomUsername);",
+									"pm.environment.set(\"testEmail\", randomEmail);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation Register($input: RegisterInput!) { register(input: $input) { token user { id username email } } }\",\n  \"variables\": {\n    \"input\": {\n      \"username\": \"{{testUsername}}\",\n      \"email\": \"{{testEmail}}\",\n      \"password\": \"Password123!\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Registers a new user with unique credentials (username, email, password). This test verifies that the API creates a new user record, properly hashes the password instead of storing it in plain text, generates a valid JWT token with appropriate expiration, and returns both the token and basic user information (excluding the password) in the response."
+					},
+					"response": []
+				},
+				{
+					"name": "Register user - user already exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"pm.test(\"Registration should fail with duplicate email\", function() {",
+									"    const jsonResponse = pm.response.json();",
+									"    pm.expect(jsonResponse.errors).to.exist;",
+									"    ",
+									"    if (jsonResponse.errors && jsonResponse.errors.length > 0) {",
+									"        const firstError = jsonResponse.errors[0];",
+									"        pm.expect(firstError.extensions.status).to.equal(409);",
+									"        pm.expect(firstError.message).to.include(\"already exists\");",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const testUsername = pm.environment.get(\"testUsername\");",
+									"const testEmail = pm.environment.get(\"testEmail\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation Register($input: RegisterInput!) { register(input: $input) { token user { id username email } } }\",\n  \"variables\": {\n    \"input\": {\n      \"username\": \"{{testUsername}}\",\n      \"email\": \"{{testEmail}}\",\n      \"password\": \"Password123!\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Attempts to register a user with an email address that already exists in the database. This test verifies that the API enforces email uniqueness constraints, properly detects the duplicate email, returns a GraphQL error with a 409 (Conflict) status code, and provides a descriptive error message that specifically mentions email duplication while not creating a new user account."
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"if (jsonData && jsonData.data && jsonData.data.login && jsonData.data.login.token) {",
+									"    pm.environment.set(\"token\", jsonData.data.login.token);",
+									"    console.log(\"Token saved to environment\");",
+									"}",
+									"",
+									"pm.test(\"Login successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.data.login.token).to.exist;",
+									"    pm.expect(jsonData.data.login.user.username).to.eql(\"testuser4\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id username email } } }\",\n  \"variables\": {\n    \"input\": {\n      \"usernameOrEmail\": \"testuser4@example.com\",\n      \"password\": \"Password123!\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Authenticates an existing user with valid credentials. This test verifies that the API correctly validates the provided username/email and password against stored credentials, issues a properly signed JWT token with appropriate claims and expiration, and returns the token along with basic user information for client-side usage."
+					},
+					"response": []
+				},
+				{
+					"name": "Login User - Invalid Passord",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Login should fail with invalid password\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    const hasError = jsonData.errors.some(error => ",
+									"        error.message.toLowerCase().includes(\"invalid credentials\")",
+									"    );",
+									"    pm.expect(hasError).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id username email } } }\",\n  \"variables\": {\n    \"input\": {\n      \"usernameOrEmail\": \"testuser@example.com\",\n      \"password\": \"WrongPassword123\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Attempts to authenticate with a valid username but incorrect password. This test verifies that the API properly rejects the invalid credentials, returns a GraphQL error with a 401 (Unauthorized) status code, provides a generic error message that doesn't leak information about which credential was incorrect, and doesn't issue a token even if the username exists."
+					},
+					"response": []
+				}
+			],
+			"description": "Tests that validate user registration and authentication mechanisms. These tests verify JWT token issuance, credential validation, secure password handling, and proper error responses for invalid authentication attempts, ensuring that the API's security layer functions correctly."
+		},
+		{
+			"name": "Queries",
+			"item": [
+				{
+					"name": "Query Foods",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Foods query successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.foods).to.be.an('array');",
+									"});",
+									"",
+									"// Check if data in the respons",
+									"pm.test(\"Foods have data\", function() {",
+									"    pm.expect(jsonData.data.foods.length).to.be.greaterThan(0);",
+									"    pm.expect(jsonData.data.foods[0].name).to.be.a('string');",
+									"});",
+									"",
+									"// ave first foodID for later use",
+									"if (jsonData.data.foods && jsonData.data.foods.length > 0) {",
+									"    pm.environment.set(\"foodId\", jsonData.data.foods[0].id);",
+									"    console.log(\"Food ID saved:\", jsonData.data.foods[0].id);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query GetFoods($limit: Int, $offset: Int) { foods(limit: $limit, offset: $offset) { id name nutritions { name value unit category } source { name } } }\",\n  \"variables\": {\n    \"limit\": 5,\n    \"offset\": 0\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Retrieves a paginated list of food items using offset-based pagination. This test verifies that the API respects both the 'limit' parameter (default: 10, specifying the maximum number of items to return) and the 'offset' parameter (default: 0, specifying how many items to skip), returns the correct number of items within the specified range, and includes all requested relationships and fields for each food item."
+					},
+					"response": []
+				},
+				{
+					"name": "Query Nutritions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Nutrition query successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.nutritions).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Nutritions are of correct category\", function() {",
+									"    // If no result, dont run the test",
+									"    if (jsonData.data.nutritions.length === 0) {",
+									"        return;",
+									"    }",
+									"    ",
+									"    // Check if all of the nutritions is \"macronutritrient\"",
+									"    const allMacronutrients = jsonData.data.nutritions.every(n => ",
+									"        n.category === 'macronutrient'",
+									"    );",
+									"    ",
+									"    pm.expect(allMacronutrients).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query GetNutritions($category: [String], $limit: Int, $offset: Int) { nutritions(category: $category, limit: $limit, offset: $offset) { id name value unit category food { name } } }\",\n  \"variables\": {\n    \"category\": [\"macronutrient\"],\n    \"limit\": 10,\n    \"offset\": 0\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Fetches nutritional information with filtering by category. This test verifies that the API correctly applies the 'category' array parameter to filter nutrition entries (e.g., \\[\"macronutrient\"\\]), respects the pagination parameters 'limit' (max items) and 'offset' (items to skip), and returns complete nutrition objects with all requested fields and proper type-specific formatting."
+					},
+					"response": []
+				},
+				{
+					"name": "Advanced Food search",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Advanced search successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.searchFoodsAdvanced).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Search results match criteria\", function() {",
+									"    // Dont't run the test if respons is empty",
+									"    if (jsonData.data.searchFoodsAdvanced.length === 0) {",
+									"        console.log(\"No search results found\");",
+									"        return;",
+									"    }",
+									"    ",
+									"    // Check if the name contains the \"input-name\"",
+									"    const nameMatches = jsonData.data.searchFoodsAdvanced.some(food => ",
+									"        food.name.toLowerCase().includes(\"mjölk\")",
+									"    );",
+									"    ",
+									"    pm.expect(nameMatches).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query SearchFoods($name: String, $nutrients: [NutrientFilter!], $limit: Int) { searchFoodsAdvanced(name: $name, nutrients: $nutrients, limit: $limit) { id name nutritions { name value unit category } } }\",\n  \"variables\": {\n    \"name\": \"mjölk\",\n    \"nutrients\": [\n      {\n        \"nutrient\": \"Protein\",\n        \"min\": 1\n      }\n    ],\n    \"limit\": 5\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Tests the complex search functionality combining text and nutritional criteria. This test verifies that the API properly processes the 'name' parameter for text search (case-insensitive partial matching), applies the 'nutrients' parameter array containing NutrientFilter objects (each with 'nutrient', 'min', and 'max' values), respects the 'limit' parameter for result count, and correctly ranks/returns only foods matching all specified criteria."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Food",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Get single food successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.food).to.exist;",
+									"    pm.expect(jsonData.data.food.id).to.equal(\"2533\");",
+									"    pm.expect(jsonData.data.food.name).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Food has nutritional information\", function() {",
+									"    pm.expect(jsonData.data.food.nutritions).to.be.an('array');",
+									"    ",
+									"    // If nutrition, save the first for later use",
+									"    if (jsonData.data.food.nutritions.length > 0) {",
+									"        pm.environment.set(\"nutritionId\", jsonData.data.food.nutritions[0].id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query GetFood($id: ID!) { food(id: $id) { id name nutritions { id name value unit category } source { name type } brand { name } ingredients { ingredientName } } }\",\n  \"variables\": {\n    \"id\": \"2533\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Retrieves detailed information about a specific food item by ID. This test verifies that the API correctly identifies the food using the 'id' parameter, retrieves the complete food object with all nested relationships (nutritions, source, brand, ingredients), and handles field selection properly so that only requested fields and relationships are returned."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Food - Invalid ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Get food with invalid ID should return null or error\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    ",
+									"    // Food is null or there is a error",
+									"    const notFoundResponse = !jsonData.data.food || ",
+									"                             (jsonData.errors && ",
+									"                              jsonData.errors.some(e => e.message.includes(\"not found\")));",
+									"                              ",
+									"    pm.expect(notFoundResponse).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query GetFood($id: ID!) { food(id: $id) { id name } }\",\n  \"variables\": {\n    \"id\": \"99999999\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Attempts to retrieve a food item with a non-existent ID (99999999). This test verifies that the API properly validates the ID parameter, handles the not-found condition gracefully, returns either null for the food field or a GraphQL error with a 404 (Not Found) status code, and provides a clear error message specifying which resource could not be found."
+					},
+					"response": []
+				},
+				{
+					"name": "Cursor Pagination - Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Cursor pagination first page successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.foodsConnection).to.exist;",
+									"    pm.expect(jsonData.data.foodsConnection.edges).to.be.an('array');",
+									"    pm.expect(jsonData.data.foodsConnection.edges.length).to.be.at.most(3);",
+									"});",
+									"",
+									"// Save cursor for next page id hasNextPage is true",
+									"if (jsonData.data.foodsConnection.pageInfo.hasNextPage) {",
+									"    pm.environment.set(\"nextPageCursor\", jsonData.data.foodsConnection.pageInfo.endCursor);",
+									"    ",
+									"    // Create a new request for next page",
+									"    const nextRequest = {",
+									"        url: pm.environment.get('baseUrl') + '/graphql',",
+									"        method: 'POST',",
+									"        header: {",
+									"            'Content-Type': 'application/json'",
+									"        },",
+									"        body: {",
+									"            mode: 'raw',",
+									"            raw: JSON.stringify({",
+									"                query: `query FoodsPagination($first: Int, $after: String) { ",
+									"                    foodsConnection(first: $first, after: $after) { ",
+									"                        edges { ",
+									"                            node { id name } ",
+									"                            cursor ",
+									"                        } ",
+									"                        pageInfo { ",
+									"                            hasNextPage ",
+									"                            endCursor ",
+									"                        } ",
+									"                        totalCount ",
+									"                    } ",
+									"                }`,",
+									"                variables: {",
+									"                    first: 3,",
+									"                    after: jsonData.data.foodsConnection.pageInfo.endCursor",
+									"                }",
+									"            })",
+									"        }",
+									"    };",
+									"    ",
+									"    // Run next page request",
+									"    pm.sendRequest(nextRequest, function (err, response) {",
+									"        const nextPageData = response.json();",
+									"        ",
+									"        pm.test(\"Cursor pagination next page successful\", function() {",
+									"            pm.expect(err).to.be.null;",
+									"            pm.expect(nextPageData.data.foodsConnection).to.exist;",
+									"            pm.expect(nextPageData.data.foodsConnection.edges).to.be.an('array');",
+									"            ",
+									"            // Check for duplicate result",
+									"            if (jsonData.data.foodsConnection.edges.length > 0 && ",
+									"                nextPageData.data.foodsConnection.edges.length > 0) {",
+									"                const firstPageIds = jsonData.data.foodsConnection.edges.map(e => e.node.id);",
+									"                const secondPageIds = nextPageData.data.foodsConnection.edges.map(e => e.node.id);",
+									"                ",
+									"                // Check - no ID is the same from last page",
+									"                const isUnique = secondPageIds.every(id => !firstPageIds.includes(id));",
+									"                pm.expect(isUnique).to.be.true;",
+									"            }",
+									"        });",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query FoodsPagination($first: Int, $after: String) { foodsConnection(first: $first, after: $after) { edges { node { id name } cursor } pageInfo { hasNextPage endCursor } totalCount } }\",\n  \"variables\": {\n    \"first\": 3\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Tests the cursor-based pagination mechanism following the Relay specification. This test verifies that the API correctly processes the 'first' parameter (limiting results to 3 items), handles the optional 'after' cursor parameter for pagination, returns edges with both nodes (food items) and cursors, provides pageInfo with accurate hasNextPage and endCursor fields, and maintains result consistency between pages."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sources",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Sources query successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.sources).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Verify Livsmedelsverket source exists\", function() {",
+									"    const livsmedelsverketExists = jsonData.data.sources.some(source => ",
+									"        source.name.toLowerCase().includes(\"livsmedelsverket\") ||",
+									"        source.type === \"official\"",
+									"    );",
+									"    pm.expect(livsmedelsverketExists).to.be.true;",
+									"    ",
+									"    // Save sourceID for Livsmedelsverket if exist",
+									"    const livsmedelsverketSource = jsonData.data.sources.find(source => ",
+									"        source.name.toLowerCase().includes(\"livsmedelsverket\")",
+									"    );",
+									"    if (livsmedelsverketSource) {",
+									"        pm.environment.set(\"livsmedelSourceId\", livsmedelsverketSource.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query GetSources { sources { id name type description } }\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Retrieves the complete list of data sources in the system. This test verifies that the API returns all available sources without requiring pagination parameters (as the total number of sources is expected to be small), includes all source attributes (id, name, type, description), and specifically verifies the presence of the official Livsmedelsverket source with correct metadata."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Brands",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Brand search successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.searchBrands).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Search results contain search term\", function() {",
+									"    // If results, check if the name contains the seach-term",
+									"    if (jsonData.data.searchBrands.length > 0) {",
+									"        const allMatch = jsonData.data.searchBrands.every(brand => ",
+									"            brand.name.toLowerCase().includes(\"test\")",
+									"        );",
+									"        pm.expect(allMatch).to.be.true;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query SearchBrands($name: String!, $limit: Int) { searchBrands(name: $name, limit: $limit) { id name description } }\",\n  \"variables\": {\n    \"name\": \"Test\",\n    \"limit\": 5\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Tests the brand search functionality with name filtering. This test verifies that the API correctly processes the required 'name' parameter (performing case-insensitive partial matching), respects the optional 'limit' parameter (default: 10) to control result size, returns matching brands ordered alphabetically by name, and includes all requested brand attributes in the response."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Nutritions by Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Vitamin kategori-filtrering fungerar\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.nutritions).to.be.an('array');",
+									"    ",
+									"    // If result, see if all data is in category vitamin",
+									"    if (jsonData.data.nutritions.length > 0) {",
+									"        const allVitamins = jsonData.data.nutritions.every(n => ",
+									"            n.category === 'vitamin'",
+									"        );",
+									"        pm.expect(allVitamins).to.be.true;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query GetNutritionsByCategory($category: [String], $limit: Int) { nutritions(category: $category, limit: $limit) { id name value unit category food { id name } } }\",\n  \"variables\": {\n    \"category\": [\"vitamin\"],\n    \"limit\": 5\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Tests filtering nutritional data by a specific category (\"vitamin\"). This test verifies that the API correctly applies the 'category' array parameter to filter nutrition entries, respects the 'limit' parameter (max 5 items returned), includes all requested nutrition fields and relationships in the response, and ensures that every returned nutrition entry has its category field set to \"vitamin\"."
+					},
+					"response": []
+				},
+				{
+					"name": "Complex Food Search",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Komplex sökning fungerar\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.searchFoodsAdvanced).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Verifiera sökresultat om de finns\", function() {",
+									"    // Skit this if no results",
+									"    if (jsonData.data.searchFoodsAdvanced.length === 0) {",
+									"        console.log(\"Inga resultat hittades för komplexsökningen\");",
+									"        return;",
+									"    }",
+									"    ",
+									"    // Check if all data in respons contains the name \"mjölk\"",
+									"    const nameMatches = jsonData.data.searchFoodsAdvanced.every(food => ",
+									"        food.name.toLowerCase().includes(\"mjölk\")",
+									"    );",
+									"    ",
+									"    pm.expect(nameMatches).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query ComplexSearch($name: String, $nutrients: [NutrientFilter!], $limit: Int) { searchFoodsAdvanced(name: $name, nutrients: $nutrients, limit: $limit) { id name nutritions { name value unit category } } }\",\n  \"variables\": {\n    \"name\": \"mjölk\",\n    \"nutrients\": [\n      {\n        \"nutrient\": \"Protein\",\n        \"min\": 3,\n        \"max\": 10\n      },\n      {\n        \"nutrient\": \"Fett\",\n        \"min\": 0.5\n      }\n    ],\n    \"limit\": 5\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Tests complex food search with multiple nutrient criteria. This test verifies that the API correctly processes the 'name' parameter (\"mjölk\"), applies multiple 'nutrients' filters simultaneously (Protein between 3-10g and Fat at least 0.5g), respects the 'limit' parameter (max 5 results), and returns only food items that satisfy all search conditions with their complete nutritional profiles."
+					},
+					"response": []
+				},
+				{
+					"name": "Foods Connection Total Count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"FoodsConnection totalCount fungerar\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.foodsConnection).to.exist;",
+									"    pm.expect(jsonData.data.foodsConnection.totalCount).to.be.a('number');",
+									"});",
+									"",
+									"pm.test(\"Total Count överensstämmer med databasinnehåll\", function() {",
+									"    // Expect at least 10 foods in database",
+									"    pm.expect(jsonData.data.foodsConnection.totalCount).to.be.at.least(10);",
+									"    ",
+									"    // Save totalCount",
+									"    pm.environment.set(\"totalFoodCount\", jsonData.data.foodsConnection.totalCount);",
+									"    ",
+									"    // Check hasNextPAge - Should be true if there is more than 1 post",
+									"    if (jsonData.data.foodsConnection.totalCount > 1) {",
+									"        pm.expect(jsonData.data.foodsConnection.pageInfo.hasNextPage).to.be.true;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query { foodsConnection(first: 1) { edges { node { id } } pageInfo { hasNextPage endCursor } totalCount } }\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Verifies the total count functionality in cursor-based pagination. This test verifies that the API's FoodsConnection type correctly includes a 'totalCount' field representing the total number of foods in the database regardless of pagination, that this count is consistent with the actual data size, and that pageInfo.hasNextPage is true when there are more items than the requested 'first' parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "Multiple Nutrition Categories",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Filtrering på flera näringsämnesklasser fungerar\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.nutritions).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Kontrollerar variationen av kategorier\", function() {",
+									"    // Skip if not enough results",
+									"    if (jsonData.data.nutritions.length < 3) {",
+									"        console.log(\"För få resultat för att verifiera variation av kategorier\");",
+									"        return;",
+									"    }",
+									"    ",
+									"    // Collect category from result",
+									"    const categories = new Set();",
+									"    jsonData.data.nutritions.forEach(n => {",
+									"        if (n.category) categories.add(n.category);",
+									"    });",
+									"    ",
+									"    // Expect at least 2 categories ",
+									"    pm.expect(categories.size).to.be.at.least(2);",
+									"    console.log(\"Hittade följande kategorier:\", Array.from(categories));",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query MultiCategories($categories: [String], $limit: Int) { nutritions(category: $categories, limit: $limit) { id name value unit category } }\",\n  \"variables\": {\n    \"categories\": [\"macronutrient\", \"vitamin\", \"mineral\"],\n    \"limit\": 15\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Tests filtering nutritional data by multiple categories simultaneously. This test verifies that the API correctly handles an array of category values (\\[\"macronutrient\", \"vitamin\", \"mineral\"\\]), applies this as an OR condition returning entries from any of the specified categories, respects the 'limit' parameter (max 15 items), and returns nutrition entries with their category field accurately set to one of the requested categories."
+					},
+					"response": []
+				}
+			],
+			"description": "Tests that validate all data retrieval operations. These tests verify the API's ability to fetch, filter, paginate, and sort data across different entity types (foods, nutritions, brands, sources), with particular focus on the correct implementation of GraphQL-specific features like nested queries and field selection."
+		},
+		{
+			"name": "Mutations",
+			"item": [
+				{
+					"name": "Create Brand",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate a unique bran name",
+									"const uniqueId = pm.variables.replaceIn('{{$timestamp}}');",
+									"pm.variables.set('uniqueBrandName', `Testmärke ${uniqueId}`);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Brand creation successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.createBrand).to.exist;",
+									"    pm.expect(jsonData.data.createBrand.name).to.equal(pm.variables.get('uniqueBrandName'));",
+									"});",
+									"",
+									"// Save BrandID",
+									"if (jsonData.data && jsonData.data.createBrand) {",
+									"    pm.environment.set(\"brandId\", jsonData.data.createBrand.id);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation CreateBrand($input: CreateBrandInput!) { createBrand(input: $input) { id name description } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"{{uniqueBrandName}}\",\n      \"description\": \"Ett testmärke skapat via Postman\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Creates a new brand with a dynamically generated unique name. This test verifies that the API requires JWT authentication (Bearer token in Authorization header), correctly processes the CreateBrandInput with required 'name' and optional 'description' fields, creates a new brand record in the database with a unique ID, and returns the newly created brand with all its attributes."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Food",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const uniqueId = pm.variables.replaceIn('{{$timestamp}}');",
+									"pm.variables.set('uniqueFoodName', `Testmat ${uniqueId}`);",
+									"",
+									"// Update name in request body",
+									"const requestBody = JSON.parse(pm.request.body.raw);",
+									"requestBody.variables.input.name = pm.variables.get('uniqueFoodName');",
+									"pm.request.body.raw = JSON.stringify(requestBody, null, 2);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Food creation successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.createFood).to.exist;",
+									"    pm.expect(jsonData.data.createFood.name).to.eql(pm.variables.get('uniqueFoodName'));",
+									"});",
+									"",
+									"// Save the new FoodID",
+									"if (jsonData.data && jsonData.data.createFood) {",
+									"    pm.environment.set(\"newFoodId\", jsonData.data.createFood.id);",
+									"    console.log(\"New Food ID saved:\", jsonData.data.createFood.id);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation CreateFood($input: CreateFoodInput!) { createFood(input: $input) { id name nutritions { name value unit } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Testmåltid\",\n      \"nutrition\": {\n        \"carbohydrates\": 25.5,\n        \"protein\": 15.2,\n        \"fat\": 8.7,\n        \"kcal\": 240\n      }\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Creates a new food item with basic nutritional information. This test verifies that the API requires JWT authentication, correctly processes the CreateFoodInput with 'name', optional 'brandName', and required 'nutrition' object (containing carbohydrates, protein, fat, and kcal values), creates both a food record and associated nutrition records with proper relationships, and returns the newly created food with all requested fields and relationships."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Food",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Food update successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.updateFood).to.exist;",
+									"    pm.expect(jsonData.data.updateFood.name).to.eql(\"Uppdaterad Testmat\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation UpdateFood($id: ID!, $input: UpdateFoodInput!) { updateFood(id: $id, input: $input) { id name nutritions { name value unit } } }\",\n  \"variables\": {\n    \"id\": \"{{newFoodId}}\",\n    \"input\": {\n      \"name\": \"Uppdaterad Testmat\",\n      \"nutrition\": {\n        \"carbohydrates\": 30,\n        \"protein\": 18,\n        \"fat\": 10,\n        \"kcal\": 283\n      }\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Updates an existing food item identified by ID. This test verifies that the API requires JWT authentication, correctly processes the 'id' parameter and UpdateFoodInput object with optional fields to modify, updates only the specified fields while preserving unmentioned values, maintains proper relationships when updating related fields like brand or nutrition values, and returns the updated food with all changes reflected."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Food",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Food deletion successful\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.be.undefined;",
+									"    pm.expect(jsonData.data.deleteFood).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation DeleteFood($id: ID!) { deleteFood(id: $id) }\",\n  \"variables\": {\n    \"id\": \"{{newFoodId}}\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Deletes an existing food item identified by ID. This test verifies that the API requires JWT authentication, correctly processes the 'id' parameter of the food to delete, removes both the food record and all associated data (like nutrition entries) from the database, maintains referential integrity across related entities, and returns a boolean 'true' value confirming successful deletion."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Food - No Authentication",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Create food should fail without authentication\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    const hasError = jsonData.errors.some(error => ",
+									"        error.message.toLowerCase().includes(\"authentication\") || ",
+									"        error.message.toLowerCase().includes(\"unauthorized\")",
+									"    );",
+									"    pm.expect(hasError).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation CreateFood($input: CreateFoodInput!) { createFood(input: $input) { id name nutritions { name value unit } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Testmåltid utan autentisering\",\n      \"nutrition\": {\n        \"carbohydrates\": 25.5,\n        \"protein\": 15.2,\n        \"fat\": 8.7,\n        \"kcal\": 240\n      }\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Attempts to create a food item without providing an authentication token. This test verifies that the API properly enforces authentication requirements for protected mutations, rejects the unauthenticated request with a GraphQL error containing a 401 (Unauthorized) status code, provides a clear error message about missing authentication, and does not create any food or nutrition records in the database."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Food - Invalid nutritions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Food creation should fail with invalid nutrition values\", function() {",
+									"    pm.response.to.have.status(200);",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    ",
+									"    // Check if the error is related to the nutrition validation",
+									"    // Either to high value or value exceeded 100g",
+									"    const hasNutritionError = jsonData.errors.some(error => ",
+									"        error.message.toLowerCase().includes(\"exceed\") || ",
+									"        error.message.toLowerCase().includes(\"macronutrient\") ||",
+									"        error.message.toLowerCase().includes(\"value\")",
+									"    );",
+									"    ",
+									"    pm.expect(hasNutritionError).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation CreateFood($input: CreateFoodInput!) { createFood(input: $input) { id name nutritions { name value unit } } }\",\n  \"variables\": {\n    \"input\": {\n      \"name\": \"Ogiltig Testmat\",\n      \"nutrition\": {\n        \"carbohydrates\": 80.0,\n        \"protein\": 50.0,\n        \"fat\": 30.0,\n        \"kcal\": 240\n      }\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Tests that validate all data modification operations. These tests verify create, update, and delete functionality across different entity types while ensuring proper validation, authentication checks, referential integrity, and appropriate error handling when constraints are violated."
+		},
+		{
+			"name": "Sequence tests",
+			"item": [
+				{
+					"name": "CRUD Sequence Test",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Genrerate unique data for this test",
+									"const uniqueId = pm.variables.replaceIn('{{$timestamp}}');",
+									"pm.variables.set('uniqueFoodName', `Sekvenstest Mat ${uniqueId}`);",
+									"pm.variables.set('updatedFoodName', `Uppdaterad Sekvenstest Mat ${uniqueId}`);",
+									"",
+									"// Get token from the environment if exist",
+									"const token = pm.environment.get('token');",
+									"if (!token) {",
+									"    console.log('Varning: Ingen token hittad i miljön.');",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Functions to run the sequence",
+									"async function runSequence() {",
+									"    // Step 1: Log in and get token",
+									"    if (!pm.environment.get('token')) {",
+									"        await loginUser();",
+									"    }",
+									"    ",
+									"    // Step2: Create food",
+									"    const newFoodId = await createFood();",
+									"    ",
+									"    // Step 3: Get food and verify it exists",
+									"    await getFood(newFoodId);",
+									"    ",
+									"    // Step 4: Update the food",
+									"    await updateFood(newFoodId);",
+									"    ",
+									"    // Step 5: Delete the food",
+									"    await deleteFood(newFoodId);",
+									"    ",
+									"    // Step 6: Verify it is deleted",
+									"    await verifyDeleted(newFoodId);",
+									"}",
+									"",
+									"// Helpfunctions for every step",
+									"async function loginUser() {",
+									"    const loginQuery = {",
+									"        query: `mutation Login($input: LoginInput!) { ",
+									"            login(input: $input) { ",
+									"                token ",
+									"                user { ",
+									"                    id ",
+									"                    username ",
+									"                } ",
+									"            } ",
+									"        }`,",
+									"        variables: {",
+									"            input: {",
+									"                usernameOrEmail: \"testuser@example.com\",",
+									"                password: \"Password123!\"",
+									"            }",
+									"        }",
+									"    };",
+									"    ",
+									"    const loginResponse = await sendRequest(loginQuery);",
+									"    ",
+									"    pm.test(\"Login successful\", function() {",
+									"        pm.expect(loginResponse.data.login.token).to.exist;",
+									"        pm.environment.set(\"token\", loginResponse.data.login.token);",
+									"    });",
+									"    ",
+									"    return loginResponse.data.login.token;",
+									"}",
+									"",
+									"async function createFood() {",
+									"    const createQuery = {",
+									"        query: `mutation CreateFood($input: CreateFoodInput!) { ",
+									"            createFood(input: $input) { ",
+									"                id ",
+									"                name ",
+									"                nutritions { ",
+									"                    name ",
+									"                    value ",
+									"                    unit ",
+									"                } ",
+									"            } ",
+									"        }`,",
+									"        variables: {",
+									"            input: {",
+									"                name: pm.variables.get('uniqueFoodName'),",
+									"                nutrition: {",
+									"                    carbohydrates: 25.5,",
+									"                    protein: 15.2,",
+									"                    fat: 8.7,",
+									"                    kcal: 240",
+									"                }",
+									"            }",
+									"        }",
+									"    };",
+									"    ",
+									"    const createResponse = await sendRequest(createQuery, true);",
+									"    ",
+									"    pm.test(\"Create food successful\", function() {",
+									"        pm.expect(createResponse.data.createFood).to.exist;",
+									"        pm.expect(createResponse.data.createFood.name).to.eql(pm.variables.get('uniqueFoodName'));",
+									"    });",
+									"    ",
+									"    return createResponse.data.createFood.id;",
+									"}",
+									"",
+									"async function getFood(id) {",
+									"    const getQuery = {",
+									"        query: `query GetFood($id: ID!) { ",
+									"            food(id: $id) { ",
+									"                id ",
+									"                name ",
+									"                nutritions { ",
+									"                    name ",
+									"                    value ",
+									"                } ",
+									"            } ",
+									"        }`,",
+									"        variables: {",
+									"            id: id",
+									"        }",
+									"    };",
+									"    ",
+									"    const getResponse = await sendRequest(getQuery);",
+									"    ",
+									"    pm.test(\"Get food successful\", function() {",
+									"        pm.expect(getResponse.data.food).to.exist;",
+									"        pm.expect(getResponse.data.food.id).to.eql(id.toString());",
+									"    });",
+									"    ",
+									"    return getResponse.data.food;",
+									"}",
+									"",
+									"async function updateFood(id) {",
+									"    const updateQuery = {",
+									"        query: `mutation UpdateFood($id: ID!, $input: UpdateFoodInput!) { ",
+									"            updateFood(id: $id, input: $input) { ",
+									"                id ",
+									"                name ",
+									"                nutritions { ",
+									"                    name ",
+									"                    value ",
+									"                } ",
+									"            } ",
+									"        }`,",
+									"        variables: {",
+									"            id: id,",
+									"            input: {",
+									"                name: pm.variables.get('updatedFoodName'),",
+									"                nutrition: {",
+									"                    carbohydrates: 30,",
+									"                    protein: 18,",
+									"                    fat: 10,",
+									"                    kcal: 282",
+									"                }",
+									"            }",
+									"        }",
+									"    };",
+									"    ",
+									"    const updateResponse = await sendRequest(updateQuery, true);",
+									"    ",
+									"    pm.test(\"Update food successful\", function() {",
+									"        pm.expect(updateResponse.data.updateFood).to.exist;",
+									"        pm.expect(updateResponse.data.updateFood.name).to.eql(pm.variables.get('updatedFoodName'));",
+									"    });",
+									"    ",
+									"    return updateResponse.data.updateFood;",
+									"}",
+									"",
+									"async function deleteFood(id) {",
+									"    const deleteQuery = {",
+									"        query: `mutation DeleteFood($id: ID!) { ",
+									"            deleteFood(id: $id) ",
+									"        }`,",
+									"        variables: {",
+									"            id: id",
+									"        }",
+									"    };",
+									"    ",
+									"    const deleteResponse = await sendRequest(deleteQuery, true);",
+									"    ",
+									"    pm.test(\"Delete food successful\", function() {",
+									"        pm.expect(deleteResponse.data.deleteFood).to.be.true;",
+									"    });",
+									"    ",
+									"    return deleteResponse.data.deleteFood;",
+									"}",
+									"",
+									"async function verifyDeleted(id) {",
+									"    const getQuery = {",
+									"        query: `query GetFood($id: ID!) { ",
+									"            food(id: $id) { ",
+									"                id ",
+									"                name ",
+									"            } ",
+									"        }`,",
+									"        variables: {",
+									"            id: id",
+									"        }",
+									"    };",
+									"    ",
+									"    const getResponse = await sendRequest(getQuery);",
+									"    ",
+									"    pm.test(\"Food should be deleted\", function() {",
+									"        // Null or GraphQL error fot data that wont be found",
+									"        const isDeleted = !getResponse.data.food || ",
+									"                        getResponse.errors && ",
+									"                        getResponse.errors.some(e => e.message.includes(\"not found\"));",
+									"        ",
+									"        pm.expect(isDeleted).to.be.true;",
+									"    });",
+									"}",
+									"",
+									"// Helpfunction to send GraphQL request",
+									"async function sendRequest(requestBody, requiresAuth = false) {",
+									"    const url = pm.environment.get('baseUrl') + '/graphql';",
+									"    ",
+									"    const headers = {",
+									"        'Content-Type': 'application/json'",
+									"    };",
+									"    ",
+									"    if (requiresAuth) {",
+									"        headers['Authorization'] = 'Bearer ' + pm.environment.get('token');",
+									"    }",
+									"    ",
+									"    const options = {",
+									"        method: 'POST',",
+									"        url: url,",
+									"        header: headers,",
+									"        body: {",
+									"            mode: 'raw',",
+									"            raw: JSON.stringify(requestBody)",
+									"        }",
+									"    };",
+									"    ",
+									"    return new Promise((resolve, reject) => {",
+									"        pm.sendRequest(options, (err, response) => {",
+									"            if (err) {",
+									"                reject(err);",
+									"            } else {",
+									"                resolve(response.json());",
+									"            }",
+									"        });",
+									"    });",
+									"}",
+									"",
+									"// Run the sequence test",
+									"runSequence().catch(e => {",
+									"    console.error(\"Error running sequence:\", e);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id username } } }\",\n  \"variables\": {\n    \"input\": {\n      \"usernameOrEmail\": \"testuser@example.com\",\n      \"password\": \"Password123!\"\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Executes a complete Create-Read-Update-Delete sequence for a food item in a single test. This multi-step test verifies that the API maintains data consistency throughout the entire lifecycle of a resource by: 1) Creating a new food with unique attributes, 2) Reading the created food to verify persistence, 3) Updating the food with modified attributes, 4) Verifying the updates were applied correctly, 5) Deleting the food, and 6) Confirming the food no longer exists in the database."
+					},
+					"response": []
+				}
+			],
+			"description": "End-to-end tests that simulate complete user workflows through multiple API operations. These tests validate that the API maintains data consistency, state transitions, and referential integrity across complex multi-step processes that reflect real-world usage patterns."
+		},
+		{
+			"name": "Error Handeling",
+			"item": [
+				{
+					"name": "GraphQL syntax error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"GraphQL syntax error hanteras korrekt\", function() {",
+									"    pm.response.to.have.status(400);",
+									"    // error field or error ibject",
+									"    const hasErrors = jsonData.errors || jsonData.error;",
+									"    pm.expect(hasErrors).to.exist;",
+									"});",
+									"",
+									"pm.test(\"Felmeddelandet är informativt\", function() {",
+									"    // Här kontrollerar vi att felmeddelandet innehåller nyckelord som indikerar syntaxfel",
+									"    // Check if error message contains keyword indicates syntaxerror",
+									"    const errorMessage = jsonData.errors ? ",
+									"                         jsonData.errors[0].message : ",
+									"                         (jsonData.error ? jsonData.error.message : \"\");",
+									"    ",
+									"    // Common syntaxerror",
+									"    const hasSyntaxTerms = errorMessage.toLowerCase().includes(\"syntax\") || ",
+									"                          errorMessage.toLowerCase().includes(\"parse\") ||",
+									"                          errorMessage.toLowerCase().includes(\"unexpected\");",
+									"                          ",
+									"    pm.expect(hasSyntaxTerms).to.be.true;",
+									"    console.log(\"Felmeddelande:\", errorMessage);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"query { foods(limit: }\",\n  \"variables\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/graphql",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Sends a request with deliberately malformed GraphQL syntax (\"query { foods(limit: }\"). This test verifies that the API correctly detects the syntax error during query parsing, returns a response with status code 400 (Bad Request), includes detailed error information with the specific syntax error location and description, and follows the GraphQL specification for error formatting while not exposing any sensitive implementation details."
+					},
+					"response": []
+				}
+			],
+			"description": "Specialized tests focused on the API's error behavior. These tests intentionally trigger various error conditions (syntax errors, validation failures, not-found scenarios) to verify that the API returns well-structured GraphQL error objects with appropriate status codes, descriptive messages, and correct error locations."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://anngelicca.se",
+			"type": "default"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
 }
