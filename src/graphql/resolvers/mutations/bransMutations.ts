@@ -1,7 +1,7 @@
-import { BrandService } from '../../../services/brandService'
-import { requireAuth } from '../../../utils/authGuard'
-import { handleError } from '../../../utils/errorHandler'
-import { AuthContext } from '../../../middleware/auth'
+import { BrandService } from '../../../services/brandService.js'
+import { requireAuth } from '../../../utils/authGuard.js'
+import { handleError } from '../../../utils/errorHandler.js'
+import { AuthContext } from '../../../middleware/auth.js'
 
 const brandService = new BrandService()
 

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
-import { Food } from './Food'
+import { Food } from './Food.js'
 
 /**
  * @class Brand

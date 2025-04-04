@@ -1,9 +1,9 @@
 import { EntityManager, Repository, In } from 'typeorm'
-import { AppDataSource } from '../config/data-source'
-import { Nutrition } from '../models/Nutrition'
-import { Food } from '../models/Food'
+import { AppDataSource } from '../config/data-source.js'
+import { Nutrition } from '../models/Nutrition.js'
+import { Food } from '../models/Food.js'
 import createError from 'http-errors'
-import { validateNutritionData } from '../utils/validateNutritionData'
+import { validateNutritionData } from '../utils/validateNutritionData.js'
 
 export class NutritionService {
   private nutritionRepository: Repository<Nutrition>

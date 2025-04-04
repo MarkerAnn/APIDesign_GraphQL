@@ -1,8 +1,8 @@
-import { IngredientService } from '../../../services/ingredientService'
-import { AppDataSource } from '../../../config/data-source'
-import { handleError } from '../../../utils/errorHandler'
+import { IngredientService } from '../../../services/ingredientService.js'
+import { AppDataSource } from '../../../config/data-source.js'
+import { handleError } from '../../../utils/errorHandler.js'
 import createError from 'http-errors'
-import { Food } from '../../../models/Food'
+import { Food } from '../../../models/Food.js'
 
 // Create an instance of IngredientService
 const ingredientService = new IngredientService()

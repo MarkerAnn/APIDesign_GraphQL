@@ -11,6 +11,6 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: false, // Dont want that typeORM create tables automatically
   logging: true,
-  entities: ['src/models/**/*.ts'],
-  migrations: ['src/db/migrations/**/*.ts'],
+  entities: ['src/models/**/*.js'],
+  migrations: ['src/db/migrations/**/*.js'],
 })

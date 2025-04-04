@@ -1,6 +1,5 @@
-import { handleError } from '../utils/errorHandler'
-import { AppDataSource } from '../config/data-source'
-import { Ingredient } from '../models/Ingredient'
+import { AppDataSource } from '../config/data-source.js'
+import { Ingredient } from '../models/Ingredient.js'
 import createError from 'http-errors'
 
 export class IngredientService {

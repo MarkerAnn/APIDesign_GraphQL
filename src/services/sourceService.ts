@@ -1,6 +1,5 @@
-import { handleError } from '../utils/errorHandler'
-import { AppDataSource } from '../config/data-source'
-import { Source } from '../models/Source'
+import { AppDataSource } from '../config/data-source.js'
+import { Source } from '../models/Source.js'
 import createError from 'http-errors'
 
 export class SourceService {

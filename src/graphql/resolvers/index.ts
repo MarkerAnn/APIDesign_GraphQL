@@ -1,12 +1,12 @@
-import { foodQueries } from './queries/foodQueries'
-import { nutritionQueries } from './queries/nutritionQueries'
-import { ingredientQueries } from './queries/ingredientQueries'
-import { sourceQueries } from './queries/sourceQueries'
-import { brandQueries } from './queries/brandQueries'
-import { userQueries } from './queries/userQueries'
-import { userMutations } from './mutations/userMutations'
-import { foodMutations } from './mutations/foodMutations'
-import { brandMutations } from './mutations/bransMutations'
+import { foodQueries } from './queries/foodQueries.js'
+import { nutritionQueries } from './queries/nutritionQueries.js'
+import { ingredientQueries } from './queries/ingredientQueries.js'
+import { sourceQueries } from './queries/sourceQueries.js'
+import { brandQueries } from './queries/brandQueries.js'
+import { userQueries } from './queries/userQueries.js'
+import { userMutations } from './mutations/userMutations.js'
+import { foodMutations } from './mutations/foodMutations.js'
+import { brandMutations } from './mutations/bransMutations.js'
 
 /**
  * @module Resolvers

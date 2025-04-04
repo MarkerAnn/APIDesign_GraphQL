@@ -1,5 +1,5 @@
-import { UserService } from '../../../services/userService'
-import { handleError } from '../../../utils/errorHandler'
+import { UserService } from '../../../services/userService.js'
+import { handleError } from '../../../utils/errorHandler.js'
 
 const userService = new UserService()
 

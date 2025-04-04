@@ -7,10 +7,10 @@ import http from 'http'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
-import { AppDataSource } from './config/data-source'
-import { typeDefs } from './graphql/schemas'
-import { resolvers } from './graphql/resolvers'
-import { getAuthContext } from './middleware/auth'
+import { AppDataSource } from './config/data-source.js'
+import { typeDefs } from './graphql/schemas/index.js'
+import { resolvers } from './graphql/resolvers/index.js'
+import { getAuthContext } from './middleware/auth.js'
 
 dotenv.config()
 

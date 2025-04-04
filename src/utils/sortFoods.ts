@@ -1,4 +1,4 @@
-import { Food } from '../models/Food'
+import { Food } from '../models/Food.js'
 
 export function sortFoods(
   foods: Food[],

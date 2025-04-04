@@ -1,5 +1,5 @@
-import { AppDataSource } from '../config/data-source'
-import { Brand } from '../models/Brand'
+import { AppDataSource } from '../config/data-source.js'
+import { Brand } from '../models/Brand.js'
 import { ILike } from 'typeorm'
 import createError from 'http-errors'
 

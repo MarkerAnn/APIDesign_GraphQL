@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
-import { Food } from './Food'
+import { Food } from './Food.js'
 
 /**
  * @class Ingredient

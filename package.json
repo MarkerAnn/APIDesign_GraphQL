@@ -2,6 +2,7 @@
   "name": "apidesign_graphql",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "ts-node-dev src/index.ts",
     "lint": "eslint . --ext .ts",

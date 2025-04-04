@@ -1,5 +1,5 @@
-import { AuthContext } from '../middleware/auth'
-import { handleError } from '../utils/errorHandler'
+import { AuthContext } from '../middleware/auth.js'
+import { handleError } from '../utils/errorHandler.js'
 import createError from 'http-errors'
 
 /**

@@ -1,8 +1,8 @@
 import { Request } from 'express'
 import jwt from 'jsonwebtoken'
-import { AppDataSource } from '../config/data-source'
-import { User } from '../models/User'
-import { handleError } from '../utils/errorHandler'
+import { AppDataSource } from '../config/data-source.js'
+import { User } from '../models/User.js'
+import { handleError } from '../utils/errorHandler.js'
 import createError from 'http-errors'
 
 // Interface for decoded JWT token

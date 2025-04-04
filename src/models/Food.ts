@@ -7,11 +7,11 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
-import { Nutrition } from './Nutrition'
-import { Source } from './Source'
-import { Brand } from './Brand'
-import { Ingredient } from './Ingredient'
-import { User } from './User'
+import { Nutrition } from './Nutrition.js'
+import { Source } from './Source.js'
+import { Brand } from './Brand.js'
+import { Ingredient } from './Ingredient.js'
+import { User } from './User.js'
 
 /**
  * @class Food

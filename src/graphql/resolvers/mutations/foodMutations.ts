@@ -1,10 +1,9 @@
-import { FoodService } from '../../../services/foodService'
-import { requireAuth } from '../../../utils/authGuard'
-import { handleError } from '../../../utils/errorHandler'
-import { AuthContext } from '../../../middleware/auth'
+import { FoodService } from '../../../services/foodService.js'
+import { requireAuth } from '../../../utils/authGuard.js'
+import { handleError } from '../../../utils/errorHandler.js'
+import { AuthContext } from '../../../middleware/auth.js'
 
 const foodService = new FoodService()
-// TODO: Best practice to create here?
 
 export const foodMutations = {
   Mutation: {

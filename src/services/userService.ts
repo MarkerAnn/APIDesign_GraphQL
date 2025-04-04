@@ -1,5 +1,5 @@
-import { AppDataSource } from '../config/data-source'
-import { User } from '../models/User'
+import { AppDataSource } from '../config/data-source.js'
+import { User } from '../models/User.js'
 import createError from 'http-errors'
 import bcrypt from 'bcrypt'
 

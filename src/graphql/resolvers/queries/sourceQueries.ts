@@ -1,7 +1,7 @@
-import { SourceService } from '../../../services/sourceService'
-import { AppDataSource } from '../../../config/data-source'
-import { Food } from '../../../models/Food'
-import { handleError } from '../../../utils/errorHandler'
+import { SourceService } from '../../../services/sourceService.js'
+import { AppDataSource } from '../../../config/data-source.js'
+import { Food } from '../../../models/Food.js'
+import { handleError } from '../../../utils/errorHandler.js'
 import createError from 'http-errors'
 
 // Create an instance of SourceService

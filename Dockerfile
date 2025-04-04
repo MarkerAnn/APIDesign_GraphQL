@@ -17,7 +17,9 @@ COPY . .
 RUN npm run build
 
 # Expose port 4000
+ENV NODE_ENV=production
 EXPOSE 4000
+
 
 # Start the application in production mode
 CMD ["node", "dist/index.js"]
