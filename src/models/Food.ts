@@ -86,7 +86,7 @@ export class Food {
    * @description Collection of nutrition entries related to this food item
    * @relations One-to-many relationship with the Nutrition entity
    */
-  @OneToMany('Nutrition', 'food', { lazy: true })
+  @OneToMany('Nutrition', 'food', { lazy: true, cascade: true })
   nutritions!: Nutrition[]
 
   /**

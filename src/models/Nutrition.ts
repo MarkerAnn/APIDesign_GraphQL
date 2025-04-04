@@ -105,8 +105,12 @@ export class Nutrition {
    * @property {Food} food - Associated food item
    * @description Reference to the Food entity that this nutrition data belongs to
    * @relations Many-to-one relationship with the Food entity
+   * When a Food is deleted, related Nutrition records will also be deleted (CASCADE).
    */
-  @ManyToOne('Food', 'nutritions', { lazy: true })
+  @ManyToOne(() => Food, (food) => food.nutritions, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'food_id' })
   food!: Food
 }
