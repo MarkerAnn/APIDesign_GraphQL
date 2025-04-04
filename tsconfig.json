@@ -13,12 +13,8 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "baseUrl": ".",
-    "paths": {
-      "*": ["src/*"]
-    },
-    "types": [],
-    "typeRoots": ["./src/@types"],
+    "baseUrl": "./src",
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true

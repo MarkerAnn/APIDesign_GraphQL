@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   graphql-api:
     container_name: graphql-api
@@ -7,12 +5,9 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '4001:4000'
+      - '4000:4000'
     env_file:
       - .env
     environment:
       NODE_ENV: production
     restart: unless-stopped
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules

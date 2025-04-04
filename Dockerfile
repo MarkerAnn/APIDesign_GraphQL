@@ -7,20 +7,17 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json to install dependencies
 COPY package*.json ./
 
-# Install all dependencies (including TypeScript and its dependencies)
+# Install all dependencies
 RUN npm install
 
-# Copy TypeScript configuration file and source code
+# Copy all files
 COPY . .
 
-# Build the application (this will create a dist/ folder)
+# Build the application
 RUN npm run build
-
-# Set NODE_ENV to production for better performance and security
-ENV NODE_ENV=production
 
 # Expose port 4000
 EXPOSE 4000
 
-# Start the application with Node, using the built JavaScript files
+# Start the application in production mode
 CMD ["node", "dist/index.js"]
