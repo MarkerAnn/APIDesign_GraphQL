@@ -23,7 +23,7 @@ export const userMutations = {
 
         return { token, user }
       } catch (error) {
-        throw handleError(error)
+        return handleError(error)
       }
     },
 

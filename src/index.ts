@@ -27,6 +27,7 @@ async function startServer() {
       typeDefs,
       resolvers,
       introspection: true, // Allow introspection in production
+      csrfPrevention: true, // Activate CSRF-skydd för säkerhet
       plugins: [
         ApolloServerPluginDrainHttpServer({ httpServer }),
         ApolloServerPluginLandingPageLocalDefault({ embed: true }), // Activate the playground in production

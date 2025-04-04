@@ -10,17 +10,17 @@ COPY package*.json ./
 # Install all dependencies (including TypeScript and its dependencies)
 RUN npm install
 
-# Copy TypeScript configuration file
-COPY tsconfig.json ./
+# Copy TypeScript configuration file and source code
+COPY . .
 
-# Copy source code directory
-COPY src ./src
+# Build the application (this will create a dist/ folder)
+RUN npm run build
 
-# Set NODE_ENV to development during the build to ensure TypeORM can find TypeScript files
-ENV NODE_ENV=development
+# Set NODE_ENV to production for better performance and security
+ENV NODE_ENV=production
 
 # Expose port 4000
 EXPOSE 4000
 
-# Start the application with ts-node-dev
-CMD ["npm", "run", "dev"]
+# Start the application with Node, using the built JavaScript files
+CMD ["node", "dist/server.js"]

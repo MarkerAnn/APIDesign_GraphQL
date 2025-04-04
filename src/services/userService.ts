@@ -30,6 +30,20 @@ export class UserService {
   ): Promise<User> {
     return await AppDataSource.transaction(
       async (transactionalEntityManager) => {
+        // Check if the username or email already exists
+        const existingUser = await transactionalEntityManager.findOne(User, {
+          where: [{ username }, { email }],
+        })
+
+        if (existingUser) {
+          if (existingUser.username === username) {
+            throw createError(409, 'Username already exists.')
+          }
+          if (existingUser.email === email) {
+            throw createError(409, 'Email already exists.')
+          }
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = new User()
