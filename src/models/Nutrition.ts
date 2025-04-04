@@ -106,7 +106,7 @@ export class Nutrition {
    * @description Reference to the Food entity that this nutrition data belongs to
    * @relations Many-to-one relationship with the Food entity
    */
-  @ManyToOne(() => Food, (food) => food.nutritions)
+  @ManyToOne('Food', 'nutritions', { lazy: true })
   @JoinColumn({ name: 'food_id' })
   food!: Food
 }

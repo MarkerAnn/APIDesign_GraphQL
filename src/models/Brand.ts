@@ -29,6 +29,6 @@ export class Brand {
    * @property {Food[]} foods - The foods associated with this brand
    * @relations One-to-many relationship with the Food entity
    */
-  @OneToMany(() => Food, (food) => food.brand)
+  @OneToMany('Food', 'brand', { lazy: true })
   foods!: Food[]
 }

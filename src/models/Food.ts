@@ -7,6 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
+// Behåll importerna för TypeScript-typning, men relationerna kommer att använda strängar
 import { Nutrition } from './Nutrition.js'
 import { Source } from './Source.js'
 import { Brand } from './Brand.js'
@@ -76,7 +77,7 @@ export class Food {
    * @relations Many-to-one relationship with the User entity
    * @note This field is nullable to accommodate food items that are sourced from official databases
    */
-  @ManyToOne(() => User, { nullable: true })
+  @ManyToOne('User', null, { nullable: true, lazy: true })
   @JoinColumn({ name: 'created_by' })
   creator?: User | null
 
@@ -85,7 +86,7 @@ export class Food {
    * @description Collection of nutrition entries related to this food item
    * @relations One-to-many relationship with the Nutrition entity
    */
-  @OneToMany(() => Nutrition, (nutrition) => nutrition.food)
+  @OneToMany('Nutrition', 'food', { lazy: true })
   nutritions!: Nutrition[]
 
   /**
@@ -100,7 +101,7 @@ export class Food {
    * @description The source from which this food item was obtained (e.g. Livsmedelsverket, user)
    * @relations Many-to-one relationship with the Source entity
    */
-  @ManyToOne(() => Source, (source) => source.foods)
+  @ManyToOne('Source', 'foods', { lazy: true })
   @JoinColumn({ name: 'source_id' })
   source!: Source
 
@@ -109,7 +110,7 @@ export class Food {
    * @description The brand associated with this food item (e.g. "Scan")
    * @relations Many-to-one relationship with the Brand entity
    */
-  @ManyToOne(() => Brand, (brand) => brand.foods)
+  @ManyToOne('Brand', 'foods', { lazy: true })
   @JoinColumn({ name: 'brand_id' })
   brand!: Brand
 
@@ -118,6 +119,6 @@ export class Food {
    * @description Collection of ingredient entries related to this food item
    * @relations One-to-many relationship with the Ingredient entity
    */
-  @OneToMany(() => Ingredient, (ingredient) => ingredient.food)
+  @OneToMany('Ingredient', 'food', { lazy: true })
   ingredients!: Ingredient[]
 }

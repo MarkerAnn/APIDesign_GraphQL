@@ -46,6 +46,6 @@ export class Source {
    * @description Collection of all food items that originate from this source
    * @relations One-to-many relationship with the Food entity
    */
-  @OneToMany(() => Food, (food) => food.source)
+  @OneToMany('Food', 'source', { lazy: true })
   foods!: Food[]
 }

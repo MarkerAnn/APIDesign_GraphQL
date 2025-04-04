@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   OneToMany,
 } from 'typeorm'
+import { Food } from './Food.js' // Behåll importen för TypeScript-typning
 
 /**
  * @class User
@@ -49,4 +50,12 @@ export class User {
    */
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date
+
+  /**
+   * @property {Food[]} createdFoods - Foods created by this user
+   * @description Collection of food items created by this user
+   * @relations One-to-many relationship with the Food entity
+   */
+  @OneToMany('Food', 'creator', { lazy: true })
+  createdFoods!: Food[]
 }

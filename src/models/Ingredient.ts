@@ -79,7 +79,7 @@ export class Ingredient {
    * @property {Food} food - The associated food item
    * @description Many-to-one relationship with the Food entity
    */
-  @ManyToOne(() => Food, (food) => food.ingredients)
+  @ManyToOne('Food', 'ingredients', { lazy: true })
   @JoinColumn({ name: 'food_id' })
   food!: Food
 }
