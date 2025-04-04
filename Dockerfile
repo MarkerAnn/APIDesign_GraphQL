@@ -23,4 +23,4 @@ ENV NODE_ENV=production
 EXPOSE 4000
 
 # Start the application with Node, using the built JavaScript files
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/index.js"]
