@@ -4,7 +4,7 @@ A GraphQL API for food information with integrated CI/CD.
 
 ## URLs
 
-- **Postman Documentation**: [View Documentation](https://documenter.getpostman.com/view/33182125/2sB2cUA2kP)
+- **Postman Documentation**: [View Documentation](https://documenter.getpostman.com/view/33182125/2sB2cVehTA)
 
 - **GraphQL API Endpoint**: `https://angelicamarker.online/graphql`
 
